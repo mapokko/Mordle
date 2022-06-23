@@ -5,7 +5,7 @@ import { Text } from "@rneui/themed";
 import { Input } from "@rneui/themed";
 import { Button } from "@rneui/base";
 
-const App2 = () => {
+const App2 = ({navigation}) => {
   return (
     <View style={s.view}>
         <Text h2 style={{marginBottom: 55, marginTop: 40}}>Iscriviti per giocare!</Text>
@@ -21,7 +21,7 @@ const App2 = () => {
           }}
         />
 
-        <Text style={{fontSize: 15, marginTop: 25, color: '#000', fontWeight: 'bold'}}>Gia' iscritto? fai Log-in!</Text>
+        <Text onPress={() => {navigation.navigate('Login')}} style={{fontSize: 15, marginTop: 25, color: '#000', fontWeight: 'bold'}}>Gia' iscritto? fai Log-in!</Text>
     </View>
   )
 }
