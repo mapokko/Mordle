@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "482521190357",
+    "project_id": "mordle-6abd7",
+    "storage_bucket": "mordle-6abd7.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:482521190357:android:2e86be6e22cf14d19ff75c",
+        "android_client_info": {
+          "package_name": "com.mordle"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "482521190357-lr45rufpnfgp5k3flgld4vbhohii064u.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBw2v2Zenji4bIAdiNuOb3OotNTBQHdN8E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "482521190357-lr45rufpnfgp5k3flgld4vbhohii064u.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
