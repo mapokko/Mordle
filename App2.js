@@ -1,4 +1,4 @@
-import { View, StyleSheet } from 'react-native'
+import { View, StyleSheet, ToastAndroid } from 'react-native'
 import React from 'react'
 
 import { Text } from "@rneui/themed";
@@ -17,7 +17,7 @@ const App2 = ({navigation}) => {
 
         <Button containerStyle={{marginTop: 15}} titleStyle={{fontSize: 20}} size='md' color='success' title='REGISTRATI'
           onPress={() => {
-            console.log('cliccalto')
+            ToastAndroid.show('te sogni..', ToastAndroid.LONG)
           }}
         />
 
