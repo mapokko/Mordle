@@ -15,7 +15,11 @@ const App2 = () => {
         <Text h4 style={{marginTop: 30}}>Password</Text>
         <Input containerStyle={{width: '80%', marginTop: 20}} placeholder='Inserisci la password' secureTextEntry={true}/>
 
-        <Button containerStyle={{marginTop: 15}} titleStyle={{fontSize: 20}} size='md' color='success' title='REGISTRATI'/>
+        <Button containerStyle={{marginTop: 15}} titleStyle={{fontSize: 20}} size='md' color='success' title='REGISTRATI'
+          onPress={() => {
+            console.log('cliccalto')
+          }}
+        />
 
         <Text style={{fontSize: 15, marginTop: 25, color: '#000', fontWeight: 'bold'}}>Gia' iscritto? fai Log-in!</Text>
     </View>
