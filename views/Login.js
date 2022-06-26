@@ -1,14 +1,20 @@
 import { View, ScrollView, StyleSheet, ToastAndroid } from 'react-native'
-import React, {useState, useRef} from 'react'
+import React, {useState, useRef, useContext, useEffect} from 'react'
 
 import { Text } from "@rneui/themed";
 import { Input } from "@rneui/themed";
 import { Button } from "@rneui/base";
 
 import auth from '@react-native-firebase/auth';
+import { StackActions } from '@react-navigation/native';
+
+
+import { UserContext } from '../App';
 
 
 const Login = ({navigation}) => {
+
+  const con = useContext(UserContext)
 
   const input1 = useRef()
   const input2 = useRef()
@@ -18,6 +24,23 @@ const Login = ({navigation}) => {
 
   const [mailError, setMailError] = useState('')
   const [pwdError, setPwdError] = useState('')
+
+  function onAuthStateChanged(u) {
+    if(u){
+        // console.log(u)
+        console.log('wowwwow')
+        con.setUserData({username: u.displayName, mail: u.email, uid: u.uid})
+        navigation.navigate('Homepage')
+    }
+    else{
+      console.log('user not logged')
+    }
+  }
+
+useEffect(() => {
+    const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
+    return subscriber; // unsubscribe on unmount
+  }, []);
 
   const checkData = () =>{
     input1.current.clear()

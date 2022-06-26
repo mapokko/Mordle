@@ -25,10 +25,19 @@ const App = () => {
   return (
     <UserContext.Provider value={data}>
       <NavigationContainer>
-        <Stack.Navigator>
-          <Stack.Screen name='Homepage' component={Home} />
+        <Stack.Navigator initialRouteName='Login'>
           <Stack.Screen options={{headerShown: false}} name='Login' component={Login} />
           <Stack.Screen options={{headerShown: false}} name='Register' component={App2} />
+          <Stack.Screen 
+            name='Homepage' 
+            component={Home}
+            options= {{
+              headerLeft: (props) => (
+                <></>
+              ),
+              gestureEnabled: false
+            }}
+            />
         </Stack.Navigator>
       </NavigationContainer>
     </UserContext.Provider>
