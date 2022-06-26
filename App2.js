@@ -5,6 +5,7 @@ import {Text} from '@rneui/themed';
 import {Input, Icon} from '@rneui/themed';
 import {Button} from '@rneui/base';
 import {Tooltip} from '@rneui/base';
+import {Dialog} from '@rneui/themed';
 
 import auth from '@react-native-firebase/auth';
 
@@ -21,7 +22,10 @@ const App2 = ({navigation}) => {
   const [mailError, setMailError] = useState('');
   const [pwdError, setPwdError] = useState('');
 
+  const [toogleLoading, setToggleLoading] = useState(false);
+
   const checkData = () => {
+    setToggleLoading(true);
     input1.current.clear();
     input2.current.clear();
     input3.current.clear();
@@ -32,6 +36,7 @@ const App2 = ({navigation}) => {
       setTimeout(() => {
         setUserError('');
       }, 5000);
+      setToggleLoading(false);
       return;
     }
 
@@ -41,6 +46,8 @@ const App2 = ({navigation}) => {
       setTimeout(() => {
         setMailError('');
       }, 5000);
+      setToggleLoading(false);
+
       return;
     }
 
@@ -50,6 +57,7 @@ const App2 = ({navigation}) => {
       setTimeout(() => {
         setPwdError('');
       }, 5000);
+      setToggleLoading(false);
       return;
     }
 
@@ -61,6 +69,10 @@ const App2 = ({navigation}) => {
       await auth().createUserWithEmailAndPassword(mail, pwd);
       await auth().currentUser.updateProfile({displayName: user});
       await auth().currentUser.reload();
+      setToggleLoading(false);
+      setUser('');
+      setMail('');
+      setPwd('');
       navigation.navigate('Homepage');
     } catch (error) {
       switch (error.code) {
@@ -92,11 +104,24 @@ const App2 = ({navigation}) => {
       }, 5000);
 
       console.log(error.code);
+      setToggleLoading(false);
     }
   };
 
   return (
     <ScrollView contentContainerStyle={s.view}>
+      <Dialog
+        isVisible={toogleLoading}
+        overlayStyle={{
+          backgroundColor: 'none',
+          width: 0,
+          height: 0,
+          padding: 0,
+          margin: 0,
+        }}>
+        <Dialog.Loading />
+      </Dialog>
+
       <Text h2 style={{marginBottom: 30, marginTop: 20}}>
         Iscriviti per giocare!
       </Text>

@@ -4,6 +4,7 @@ import React, {useState, useRef, useContext, useEffect} from 'react';
 import {Text} from '@rneui/themed';
 import {Input} from '@rneui/themed';
 import {Button} from '@rneui/base';
+import {Dialog} from '@rneui/themed';
 
 import auth from '@react-native-firebase/auth';
 import {
@@ -30,6 +31,8 @@ const Login = ({navigation}) => {
   const [mailError, setMailError] = useState('');
   const [pwdError, setPwdError] = useState('');
 
+  const [toogleLoading, setToggleLoading] = useState(false);
+
   useFocusEffect(
     React.useCallback(() => {
       const checkStatus = u => {
@@ -43,6 +46,7 @@ const Login = ({navigation}) => {
   );
 
   const checkData = () => {
+    setToggleLoading(true);
     input1.current.clear();
     input2.current.clear();
 
@@ -52,6 +56,7 @@ const Login = ({navigation}) => {
       setTimeout(() => {
         setMailError('');
       }, 5000);
+      setToggleLoading(false);
       return;
     }
 
@@ -61,6 +66,7 @@ const Login = ({navigation}) => {
       setTimeout(() => {
         setPwdError('');
       }, 5000);
+      setToggleLoading(false);
       return;
     }
 
@@ -73,6 +79,9 @@ const Login = ({navigation}) => {
       .then(() => {
         ToastAndroid.show('Login avvenuto con successo!', ToastAndroid.LONG);
         console.log('LOGGED IN');
+        setToggleLoading(false);
+        setMail('');
+        setPwd('');
         navigation.navigate('Homepage');
       })
       .catch(err => {
@@ -107,10 +116,24 @@ const Login = ({navigation}) => {
           setPwdError('');
         }, 5000);
       });
+    setToggleLoading(false);
   };
 
   return (
-    <ScrollView contentContainerStyle={s.view}>
+    <ScrollView
+      contentContainerStyle={s.view}
+      keyboardShouldPersistTaps="handled">
+      <Dialog
+        isVisible={toogleLoading}
+        overlayStyle={{
+          backgroundColor: 'none',
+          width: 0,
+          height: 0,
+          padding: 0,
+          margin: 0,
+        }}>
+        <Dialog.Loading />
+      </Dialog>
       <Text h2 style={{marginBottom: 55, marginTop: 40}}>
         Accedi!
       </Text>
