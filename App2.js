@@ -28,23 +28,23 @@ const App2 = ({navigation}) => {
     input1.current.clear()
     input2.current.clear()
 
-    // if(!mail.match(/^([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$/)){
-    //   input1.current.shake()
-    //   setMailError('Email non adeguata!')
-    //   setTimeout(()=>{
-    //     setMailError('')
-    //   }, 5000)
-    //   return
-    // }
+    if(mail.length === 0){
+      input1.current.shake()
+      setMailError('Email mancante!')
+      setTimeout(()=>{
+        setMailError('')
+      }, 5000)
+      return
+    }
 
-    // if(pwd.length < 6){
-    //   input2.current.shake()
-    //   setPwdError('Password troppo breve!')
-    //   setTimeout(()=>{
-    //     setPwdError('')
-    //   }, 5000)
-    //   return
-    // }
+    if(pwd.length === 0){
+      input2.current.shake()
+      setPwdError('Password mancante!')
+      setTimeout(()=>{
+        setPwdError('')
+      }, 5000)
+      return
+    }
 
     addUser()
   }
