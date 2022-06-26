@@ -8,11 +8,7 @@ import {Tooltip} from '@rneui/base';
 
 import auth from '@react-native-firebase/auth';
 
-import {useSelector, useDispatch} from 'react-redux';
-import {setUsername} from '../state/userSlice';
-
 const App2 = ({navigation}) => {
-  const dispatch = useDispatch();
   const input1 = useRef();
   const input2 = useRef();
   const input3 = useRef();
@@ -32,6 +28,11 @@ const App2 = ({navigation}) => {
 
     if (user.length === 0) {
       input3.current.shake();
+      setUserError('username mancante!');
+      setTimeout(() => {
+        setUserError('');
+      }, 5000);
+      return;
     }
 
     if (mail.length === 0) {
@@ -96,7 +97,7 @@ const App2 = ({navigation}) => {
 
   return (
     <ScrollView contentContainerStyle={s.view}>
-      <Text h2 style={{marginBottom: 55, marginTop: 40}}>
+      <Text h2 style={{marginBottom: 30, marginTop: 20}}>
         Iscriviti per giocare!
       </Text>
 
@@ -116,7 +117,7 @@ const App2 = ({navigation}) => {
       <Input
         ref={input1}
         value={mail}
-        containerStyle={{width: '80%', marginTop: 20}}
+        containerStyle={{width: '80%', marginTop: 10}}
         placeholder="Inserisci la mail"
         onChangeText={str => {
           setMail(str);
@@ -124,9 +125,7 @@ const App2 = ({navigation}) => {
         errorMessage={mailError}
       />
 
-      <Text h4 style={{marginTop: 30}}>
-        Password
-      </Text>
+      <Text h4>Password</Text>
       <Input
         ref={input2}
         errorMessage={pwdError}
