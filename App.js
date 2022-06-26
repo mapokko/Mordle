@@ -14,7 +14,11 @@ export const UserContext = createContext()
 const Stack = createNativeStackNavigator();
 
 const App = () => {
-  const [userData, setUserData] = useState('bello')
+  const [userData, setUserData] = useState({
+    username: '',
+    mail: '',
+    uid: ''
+  })
   const data = {userData, setUserData}
   // const DevicesContextValue = React.useMemo(() => ({ userData, setUserData}), [userData]);
 

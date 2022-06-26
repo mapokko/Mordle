@@ -8,39 +8,43 @@ import { Tooltip } from '@rneui/base';
 
 import auth from '@react-native-firebase/auth';
 
+import { UserContext } from './App';
+
 
 const App2 = ({navigation}) => {
+  const con = useContext(UserContext)
+
   const input1 = useRef()
   const input2 = useRef()
+  const input3 = useRef()
 
   const [mail, setMail] = useState('')
   const [pwd, setPwd] = useState('')
 
   const [mailError, setMailError] = useState('')
-
   const [pwdError, setPwdError] = useState('')
 
   const checkData = () => {
     input1.current.clear()
     input2.current.clear()
 
-    if(!mail.match(/^([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$/)){
-      input1.current.shake()
-      setMailError('Email non adeguata!')
-      setTimeout(()=>{
-        setMailError('')
-      }, 5000)
-      return
-    }
+    // if(!mail.match(/^([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$/)){
+    //   input1.current.shake()
+    //   setMailError('Email non adeguata!')
+    //   setTimeout(()=>{
+    //     setMailError('')
+    //   }, 5000)
+    //   return
+    // }
 
-    if(pwd.length < 6){
-      input2.current.shake()
-      setPwdError('Password troppo breve!')
-      setTimeout(()=>{
-        setPwdError('')
-      }, 5000)
-      return
-    }
+    // if(pwd.length < 6){
+    //   input2.current.shake()
+    //   setPwdError('Password troppo breve!')
+    //   setTimeout(()=>{
+    //     setPwdError('')
+    //   }, 5000)
+    //   return
+    // }
 
     addUser()
   }
@@ -49,20 +53,37 @@ const App2 = ({navigation}) => {
    auth()
     .createUserWithEmailAndPassword(mail, pwd)
     .then(()=>{
-      ToastAndroid.show('Utente creato!', ToastAndroid.LONG)
+      ToastAndroid.show('Utente e username!', ToastAndroid.LONG)
       navigation.navigate('Homepage')
     })
     .catch((error)=>{
-      if (error.code === 'auth/email-already-in-use') {
-        setMailError("Email gia' utilizzata!")
-        setTimeout(()=>{
-          setMailError('')
-        }, 5000)
+      switch (error.code) {
+        case 'auth/email-already-in-use':
+          setMailError("email gia' in utilizzo!")
+          input1.current.shake()
+          break;
+        
+        case 'auth/invalid-email':
+          setMailError("email non valida!")
+          input1.current.shake()
+          break;
+
+        case 'auth/weak-password':
+          setPwdError("password troppo debole!")
+          input1.current.shake()
+          break;
+      
+        default:
+          break;
       }
-  
-      if (error.code === 'auth/invalid-email') {
-        console.log('Email non adeguata!');
-      }
+
+      setTimeout(()=>{
+        setMailError('')
+      }, 5000)
+
+      setTimeout(()=>{
+        setPwdError('')
+      }, 5000)
 
       console.log(error.code)
 
@@ -104,7 +125,7 @@ const App2 = ({navigation}) => {
           }}
         />
 
-        <Text onPress={() => {navigation.navigate('Login')}} style={{fontSize: 15, marginTop: 25, color: '#000', fontWeight: 'bold'}}>Gia' iscritto? fai Log-in!</Text>
+        <Text onPress={() => {navigation.navigate('Login')}} style={{fontSize: 15, marginVertical: 25, color: '#000', fontWeight: 'bold'}}>Gia' iscritto? fai Log-in!</Text>
     </ScrollView>
   )
 }

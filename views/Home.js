@@ -10,11 +10,14 @@ const Home = ({navigation}) => {
 
     const [initializing, setInitializing] = useState(true);
     const [user, setUser] = useState()
-    const ss = useContext(UserContext);
+    const con = useContext(UserContext);
 
-    function onAuthStateChanged(user) {
-        if(user){
-            setUser(user);
+    function onAuthStateChanged(u) {
+        if(u){
+            setUser(u);
+            console.log(u)
+            console.log('wowwwow')
+            con.setUserData({username: u.displayName, mail: u.email, uid: u.uid})
             if (initializing) setInitializing(false);
         }
         else{
@@ -27,7 +30,19 @@ const Home = ({navigation}) => {
         return subscriber; // unsubscribe on unmount
       }, []);
 
+      const showUser = () => {
+        const lol = auth().currentUser
+        console.log(con.userData)
+      }
+
       const signOut = () =>{
+        con.setUserData({
+            ...con.userData,
+            username: '',
+            mail: '',
+            uid: ''
+        })
+
         auth()
             .signOut()
             .then(() => console.log('User signed out!'));
@@ -39,8 +54,7 @@ const Home = ({navigation}) => {
         <Button 
             title='Clicca'
             onPress={()=>{
-                console.log(ss.userData)
-                console.log('ciao')
+                showUser()
             }}
         />
         <Button 
