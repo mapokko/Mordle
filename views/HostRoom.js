@@ -270,10 +270,19 @@ const ChatTab = () => {
           placeholder="Messaggio"
           value={msg}
           onChangeText={text => setMsg(text)}
-          // containerStyle={{width: '80%'}}
-          leftIcon={{name: 'envira', type: 'font-awesome'}}
+          rightIcon={
+            <Icon
+              name="sc-telegram"
+              type="evilicon"
+              iconStyle={{fontSize: 45}}
+              containerStyle={{borderRadius: 100}}
+              onPress={() => {
+                // sendMsg();
+              }}
+            />
+          }
           inputContainerStyle={{
-            borderBottomColor: 'black',
+            borderBottomColor: 'grey',
             borderWidth: 2,
             borderRadius: 30,
           }}
