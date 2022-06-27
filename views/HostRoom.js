@@ -17,7 +17,14 @@ import {Button, fonts} from '@rneui/base';
 import {useFocusEffect} from '@react-navigation/native';
 
 import {randomWords, valid} from '../helper/comms';
-import {setId, setWords, setHost, next, clear} from '../state/matchSlice';
+import {
+  setId,
+  setWords,
+  setHost,
+  setHostUid,
+  next,
+  clear,
+} from '../state/matchSlice';
 
 const RoomContext = createContext();
 
@@ -28,10 +35,10 @@ const HostRoom = ({route, navigation}) => {
   const dispatch = useDispatch();
 
   const [chat, setChat] = useState([]);
-  const [waitPlayers, setWaitPlayers] = useState(1);
+  const [waitPlayers, setWaitPlayers] = useState([]);
 
   const con = useContext(RoomContext);
-  const contextData = {route, chat};
+  const contextData = {route, chat, waitPlayers};
 
   useFocusEffect(
     React.useCallback(() => {
@@ -60,43 +67,46 @@ const HostRoom = ({route, navigation}) => {
         host: auth().currentUser.uid,
         playerNum: pNum,
         words: words,
-        players: initPLayers,
+        playersUid: initPLayers,
+        playersName: [auth().currentUser.displayName],
         scores: {},
       };
 
       dispatch(setWords(toSend.words));
       dispatch(setHost(auth().currentUser.displayName));
-      dispatch(setId('ABCD1234'));
+      dispatch(setHostUid(auth().currentUser.uid));
+      // dispatch(setId('ABCD1234'));
       setChat(toSend.chat);
 
-      // try {
-      //   firestore()
-      //     .collection('matches')
-      //     .add(toSend)
-      //     .then(doc => {
-      //       dispatch(setId(doc.id));
-      //       ToastAndroid.show('Match created!', ToastAndroid.LONG);
-      //     });
-      // } catch (error) {
-      //   console.log(error);
-      // }
+      try {
+        firestore()
+          .collection('matches')
+          .add(toSend)
+          .then(doc => {
+            dispatch(setId(doc.id));
+            ToastAndroid.show('Match created!', ToastAndroid.LONG);
+          });
+      } catch (error) {
+        console.log(error);
+      }
     }, []),
   );
 
-  // useFocusEffect(
-  //   React.useCallback(() => {
-  //     const subscribe = firestore()
-  //       .collection('matches')
-  //       .doc(matchData.matchId)
-  //       .onSnapshot(docSnapshot => {
-  //         const data = docSnapshot.data();
-  //         if (data) {
-  //           setChat(data.chat);
-  //         }
-  //       });
-  //     return subscribe;
-  //   }, [matchData.matchId]),
-  // );
+  useFocusEffect(
+    React.useCallback(() => {
+      const subscribe = firestore()
+        .collection('matches')
+        .doc(matchData.matchId)
+        .onSnapshot(docSnapshot => {
+          const data = docSnapshot.data();
+          if (data) {
+            setChat(data.chat);
+            setWaitPlayers(data.playersName);
+          }
+        });
+      return subscribe;
+    }, [matchData.matchId]),
+  );
 
   return (
     <>
@@ -106,7 +116,7 @@ const HostRoom = ({route, navigation}) => {
           buttonStyle={{marginBottom: 15}}
           title="show"
           onPress={() => {
-            console.log(chat);
+            console.log(matchData);
           }}
         />
       </View>
@@ -188,7 +198,7 @@ const MatchTab = () => {
           Sala d'attesa
         </Text>
         <Text style={{color: 'black', fontSize: 16}}>
-          giocatori in attesa: 1
+          giocatori in attesa: {con.waitPlayers.length}
         </Text>
       </View>
 
@@ -277,7 +287,7 @@ const ChatTab = () => {
               iconStyle={{fontSize: 45}}
               containerStyle={{borderRadius: 100}}
               onPress={() => {
-                // sendMsg();
+                sendMsg();
               }}
             />
           }
@@ -287,22 +297,36 @@ const ChatTab = () => {
             borderRadius: 30,
           }}
         />
-        {/* <Button
-          title="click"
-          onPress={() => {
-            sendMsg();
-          }}
-        /> */}
       </View>
     </View>
   );
 };
 
 const PlayersTab = () => {
+  const con = useContext(RoomContext);
   return (
-    <View>
-      <Text>Giocatori</Text>
-    </View>
+    <ScrollView>
+      {con.waitPlayers.length > 0 ? (
+        con.waitPlayers.map((item, index) => {
+          return (
+            <Text
+              key={index}
+              style={{
+                fontSize: 20,
+                paddingLeft: 10,
+                paddingVertical: 10,
+
+                borderBottomColor: 'grey',
+                borderBottomWidth: 1,
+              }}>
+              {item}
+            </Text>
+          );
+        })
+      ) : (
+        <></>
+      )}
+    </ScrollView>
   );
 };
 
