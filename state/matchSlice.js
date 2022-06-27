@@ -6,15 +6,17 @@ export const matchSlice = createSlice({
     matchId: '',
     words: [],
     position: 0,
+    host: '',
   },
   reducers: {
     setId: (state, action) => {
       state.matchId = action.payload;
     },
     setWords: (state, action) => {
-      action.payload.forEach(el => {
-        state.words.push(el);
-      });
+      state.words = action.payload;
+    },
+    setHost: (state, action) => {
+      state.host = action.payload;
     },
     next: state => {
       state.position = state.position + 1;
@@ -23,10 +25,11 @@ export const matchSlice = createSlice({
       state.matchId = '';
       state.words = [];
       state.position = 0;
+      state.host = '';
     },
   },
 });
 
-export const {setId, setWords, next, clear} = matchSlice.actions;
+export const {setId, setWords, setHost, next, clear} = matchSlice.actions;
 
 export default matchSlice.reducer;

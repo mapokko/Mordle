@@ -8,6 +8,7 @@ import {Tooltip} from '@rneui/base';
 import {Dialog} from '@rneui/themed';
 
 import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
 
 const App2 = ({navigation}) => {
   const input1 = useRef();
@@ -69,6 +70,9 @@ const App2 = ({navigation}) => {
       await auth().createUserWithEmailAndPassword(mail, pwd);
       await auth().currentUser.updateProfile({displayName: user});
       await auth().currentUser.reload();
+      await firestore()
+        .collection('users')
+        .add({username: user, uid: auth().currentUser.uid});
       setToggleLoading(false);
       setUser('');
       setMail('');
