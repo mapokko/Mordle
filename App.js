@@ -10,7 +10,7 @@ import store from './state/store';
 import App2 from './App2';
 import Login from './views/Login';
 import Home from './views/Home';
-// import UserContext from './context/userContext'
+import HostRoom from './views/HostRoom';
 
 export const UserContext = createContext();
 
@@ -53,6 +53,11 @@ const App = () => {
               headerLeft: props => <></>,
               gestureEnabled: false,
             }}
+          />
+          <Stack.Screen
+            options={{headerShown: false}}
+            name="Hostroom"
+            component={HostRoom}
           />
         </Stack.Navigator>
       </NavigationContainer>

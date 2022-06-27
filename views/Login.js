@@ -79,10 +79,10 @@ const Login = ({navigation}) => {
       .then(() => {
         ToastAndroid.show('Login avvenuto con successo!', ToastAndroid.LONG);
         console.log('LOGGED IN');
-        setToggleLoading(false);
         setMail('');
         setPwd('');
         navigation.navigate('Homepage');
+        setToggleLoading(false);
       })
       .catch(err => {
         switch (err.code) {

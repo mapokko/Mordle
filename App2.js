@@ -109,7 +109,9 @@ const App2 = ({navigation}) => {
   };
 
   return (
-    <ScrollView contentContainerStyle={s.view}>
+    <ScrollView
+      contentContainerStyle={s.view}
+      keyboardShouldPersistTaps="handled">
       <Dialog
         isVisible={toogleLoading}
         overlayStyle={{
