@@ -7,6 +7,7 @@ export const matchSlice = createSlice({
     words: [],
     position: 0,
     host: '',
+    hostUid: '',
     playerName: [],
   },
   reducers: {
@@ -18,6 +19,9 @@ export const matchSlice = createSlice({
     },
     setHost: (state, action) => {
       state.host = action.payload;
+    },
+    setHostUid: (state, action) => {
+      state.hostUid = action.payload;
     },
     addPlayer: (state, action) => {
       state.playerName.push(action.payload);
@@ -34,7 +38,7 @@ export const matchSlice = createSlice({
   },
 });
 
-export const {setId, setWords, setHost, addPlayer, next, clear} =
+export const {setId, setWords, setHostUid, setHost, addPlayer, next, clear} =
   matchSlice.actions;
 
 export default matchSlice.reducer;
