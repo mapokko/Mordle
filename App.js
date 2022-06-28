@@ -13,6 +13,7 @@ import Home from './views/Home';
 import HostRoom from './views/HostRoom';
 import PlayerRoom from './views/PlayerRoom';
 import SearchMatch from './views/SearchMatch';
+import PlayBoard from './views/PlayBoard';
 
 export const UserContext = createContext();
 
@@ -37,7 +38,7 @@ const App = () => {
     <Provider store={store}>
       {/* <UserContext.Provider value={red}> */}
       <NavigationContainer>
-        <Stack.Navigator initialRouteName="Login">
+        <Stack.Navigator initialRouteName="Playboard">
           <Stack.Screen
             options={{headerShown: false}}
             name="Login"
@@ -70,6 +71,11 @@ const App = () => {
             options={{headerShown: false}}
             name="Playerroom"
             component={PlayerRoom}
+          />
+          <Stack.Screen
+            options={{headerShown: false}}
+            name="Playboard"
+            component={PlayBoard}
           />
         </Stack.Navigator>
       </NavigationContainer>

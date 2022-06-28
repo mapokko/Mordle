@@ -96,6 +96,8 @@ const PlayerRoom = ({route, navigation}) => {
               } else {
                 setChat(data.chat);
                 setWaitPlayers(data.playersName);
+                if (data.play == true && finish == false) {
+                }
               }
             }
           },
