@@ -118,7 +118,7 @@ const HostRoom = ({route, navigation}) => {
           firestore()
             .collection('matches')
             .doc(matchData.matchId)
-            .update({canc: true})
+            .update({canc: true, wait: false, play: false})
             .then(() => {
               dispatch(clear());
               navigation.dispatch(e.data.action);

@@ -97,14 +97,21 @@ const Home = ({navigation}) => {
       />
 
       <Button
-        title="overlay"
+        title="CREA PARTITA"
         onPress={() => {
           toggleOverlay();
         }}
       />
 
       <Button
-        title="esci"
+        title="CERCA PARTITA"
+        onPress={() => {
+          navigation.navigate('Search');
+        }}
+      />
+
+      <Button
+        title="LOG OUT"
         onPress={() => {
           signOut();
         }}
