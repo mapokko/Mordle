@@ -11,6 +11,7 @@ import App2 from './App2';
 import Login from './views/Login';
 import Home from './views/Home';
 import HostRoom from './views/HostRoom';
+import PlayerRoom from './views/PlayerRoom';
 import SearchMatch from './views/SearchMatch';
 
 export const UserContext = createContext();
@@ -64,6 +65,11 @@ const App = () => {
             options={{headerShown: false}}
             name="Hostroom"
             component={HostRoom}
+          />
+          <Stack.Screen
+            options={{headerShown: false}}
+            name="Playerroom"
+            component={PlayerRoom}
           />
         </Stack.Navigator>
       </NavigationContainer>

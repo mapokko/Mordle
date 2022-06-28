@@ -1,17 +1,14 @@
-import {ToastAndroid, View, ScrollView, AppState} from 'react-native';
+import {View, ScrollView, ToastAndroid, AppState} from 'react-native';
 import React, {useState, useContext, createContext, useRef} from 'react';
 import {useSelector, useDispatch} from 'react-redux';
-import firestore from '@react-native-firebase/firestore';
+import {useFocusEffect} from '@react-navigation/native';
+
+import firestore, {firebase} from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
 
 import {Input, Text, Tab, TabView, Icon, Dialog} from '@rneui/themed';
 import {Button, fonts} from '@rneui/base';
 
-// import {TabView, SceneMap} from 'react-native-tab-view';
-
-import {useFocusEffect} from '@react-navigation/native';
-
-import {randomWords, valid} from '../helper/comms';
 import {
   setId,
   setWords,
@@ -21,64 +18,65 @@ import {
   clear,
 } from '../state/matchSlice';
 
+import {TopInfo} from './HostRoom';
+
 const RoomContext = createContext();
 
-const HostRoom = ({route, navigation}) => {
+const PlayerRoom = ({route, navigation}) => {
   const appState = useRef(AppState.currentState);
+  const {id} = route.params;
 
-  const {pNum, wNum, wLen} = route.params;
   const matchData = useSelector(state => state.match);
   const dispatch = useDispatch();
 
   const [chat, setChat] = useState([]);
   const [waitPlayers, setWaitPlayers] = useState([]);
 
-  const [startBtn, setStartBtn] = useState(true);
-
-  const con = useContext(RoomContext);
-  const contextData = {route, chat, waitPlayers, startBtn};
-
   const [toggleExit, setToggleExit] = useState(false);
+  const [toggleCanc, setToggleCanc] = useState(false);
+
+  const contextData = {route, chat, waitPlayers};
 
   useFocusEffect(
     React.useCallback(() => {
-      const words = randomWords(wLen, wNum);
-      const initPLayers = [];
-      initPLayers.push(auth().currentUser.uid);
-      const toSend = {
-        wait: true,
-        play: false,
-        finish: false,
-        canc: false,
-        chat: [
-          {
-            author: 'Mordle',
-            message: 'Benvenuto nella chat!',
-          },
-        ],
-        hostUid: auth().currentUser.uid,
-        hostName: auth().currentUser.displayName,
-        playerNum: pNum,
-        words: words,
-        playersUid: initPLayers,
-        playersName: [auth().currentUser.displayName],
-        scores: {},
-      };
-
-      dispatch(setWords(toSend.words));
-      dispatch(setHost(auth().currentUser.displayName));
-      dispatch(setHostUid(auth().currentUser.uid));
-      // dispatch(setId('ABCD1234'));
-      setChat(toSend.chat);
-
       firestore()
         .collection('matches')
-        .add(toSend)
+        .doc(id)
+        .get()
         .then(doc => {
           dispatch(setId(doc.id));
-          ToastAndroid.show('Match created!', ToastAndroid.LONG);
+          dispatch(setWords(doc._data.words));
+          dispatch(setHost(doc._data.hostName));
+          dispatch(setHostUid(doc._data.hostUid));
+
+          firestore()
+            .collection('matches')
+            .doc(doc.id)
+            .update({
+              playersName: [
+                ...doc._data.playersName,
+                auth().currentUser.displayName,
+              ],
+              playersUid: [...doc._data.playersUid, auth().currentUser.uid],
+            });
+
+          firestore()
+            .collection('matches')
+            .doc(doc.id)
+            .update({
+              chat: [
+                ...doc._data.chat,
+                {
+                  author: 'Mordle',
+                  message: `${
+                    auth().currentUser.displayName
+                  } si e' unito alla partita!`,
+                },
+              ],
+            });
         })
         .catch(err => {
+          console.log('ERR IN FETCH INIT DATA PLAYERROOM');
           console.log(err);
         });
     }, []),
@@ -93,10 +91,11 @@ const HostRoom = ({route, navigation}) => {
           docSnapshot => {
             const data = docSnapshot.data();
             if (data) {
-              setChat(data.chat);
-              setWaitPlayers(data.playersName);
-              if (data.playerNum == data.playersUid.length) {
-                setStartBtn(false);
+              if (data.canc) {
+                setToggleCanc(true);
+              } else {
+                setChat(data.chat);
+                setWaitPlayers(data.playersName);
               }
             }
           },
@@ -118,18 +117,47 @@ const HostRoom = ({route, navigation}) => {
           e.data.action.type == 'NAVIGATE'
         ) {
           console.log('RUNNING');
-          console.log(matchData.matchId);
+
           firestore()
             .collection('matches')
             .doc(matchData.matchId)
-            .update({canc: true, wait: false, play: false})
-            .then(() => {
-              dispatch(clear());
-              navigation.dispatch(e.data.action);
-            })
-            .catch(err => {
-              console.log(err);
+            .get()
+            .then(doc => {
+              const pos = doc._data.playersName.indexOf(
+                auth().currentUser.displayName,
+              );
+
+              firestore()
+                .collection('matches')
+                .doc(matchData.matchId)
+                .update({
+                  playersUid: doc._data.playersUid.filter(val => {
+                    if (val != auth().currentUser.uid) {
+                      return true;
+                    } else {
+                      return false;
+                    }
+                  }),
+                })
+                .then(() => {
+                  firestore()
+                    .collection('matches')
+                    .doc(matchData.matchId)
+                    .update({
+                      playersName: doc._data.playersName.filter(
+                        (val, index) => index != pos,
+                      ),
+                    })
+                    .then(() => {
+                      navigation.dispatch(e.data.action);
+                    });
+                });
             });
+        } else if (
+          e.data.action.payload?.name == 'Search' &&
+          e.data.action.type == 'NAVIGATE'
+        ) {
+          navigation.dispatch(e.data.action);
         } else {
           setToggleExit(true);
         }
@@ -164,9 +192,8 @@ const HostRoom = ({route, navigation}) => {
           onBackdropPress={() => {
             setToggleExit(false);
           }}>
-          <Dialog.Title title="ATTENZIONE" />
           <Text style={{color: 'black', fontSize: 16}}>
-            Se esci dalla stanza, eliminerai la partita per tutti.
+            Vuoi uscire dalla stanza?
           </Text>
           <Dialog.Actions>
             <Button
@@ -186,23 +213,29 @@ const HostRoom = ({route, navigation}) => {
             />
           </Dialog.Actions>
         </Dialog>
+
+        <Dialog isVisible={toggleCanc}>
+          <Text style={{color: 'black', fontSize: 16}}>
+            L'Host ha cancellato la partita.
+          </Text>
+          <Dialog.Actions>
+            <Button
+              type="clear"
+              title="OK"
+              onPress={() => {
+                setToggleCanc(false);
+                navigation.navigate('Search');
+              }}
+            />
+          </Dialog.Actions>
+        </Dialog>
+
         <TopInfo id={matchData.matchId} hostName={matchData.host} />
       </View>
       <RoomContext.Provider value={contextData}>
         <TabComponent />
       </RoomContext.Provider>
     </>
-  );
-};
-
-export const TopInfo = ({id, hostName}) => {
-  return (
-    <View style={{paddingVertical: 20, paddingHorizontal: 10}}>
-      <Text style={{color: 'black'}}>id partita: {id}</Text>
-      <Text h3 style={{color: 'black'}}>
-        Host: {hostName}
-      </Text>
-    </View>
   );
 };
 
@@ -241,7 +274,6 @@ export const TabComponent = () => {
 
 const MatchTab = () => {
   const con = useContext(RoomContext);
-  const matchData = useSelector(state => state.match);
   return (
     <View
       style={{
@@ -272,18 +304,12 @@ const MatchTab = () => {
       </View>
 
       <View>
-        <Button
-          disabled={con.startBtn}
-          buttonStyle={{margin: 10}}
-          title={con.startBtn ? 'Aspetto giocatori...' : 'Comincia la partita!'}
-          color="success"
-          onPress={() => {
-            firestore()
-              .collection('matches')
-              .doc(matchData.matchId)
-              .update({wait: false, play: true});
-          }}
-        />
+        <Text
+          h4
+          h4Style={{fontSize: 25, color: 'gray'}}
+          style={{textAlign: 'center', paddingBottom: 25}}>
+          L'host fara' cominciare la partita...
+        </Text>
       </View>
     </View>
   );
@@ -405,4 +431,4 @@ const PlayersTab = () => {
   );
 };
 
-export default HostRoom;
+export default PlayerRoom;
