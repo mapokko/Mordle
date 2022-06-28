@@ -155,7 +155,7 @@ const PlayerRoom = ({route, navigation}) => {
             });
         } else if (
           e.data.action.payload?.name == 'Search' &&
-          e.data.action.type == 'NAVIGATE'
+          e.data.action.type == 'REPLACE'
         ) {
           navigation.dispatch(e.data.action);
         } else {
@@ -224,7 +224,7 @@ const PlayerRoom = ({route, navigation}) => {
               title="OK"
               onPress={() => {
                 setToggleCanc(false);
-                navigation.navigate('Search');
+                navigation.replace('Search');
               }}
             />
           </Dialog.Actions>
