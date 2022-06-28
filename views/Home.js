@@ -239,6 +239,7 @@ const SelectDropdown = ({label, data, placeholder, k}) => {
           },
           isFocus && {borderColor: 'blue'},
         ]}
+        selectedTextStyle={{color: 'black'}}
         labelField="label"
         valueField="value"
         placeholder={placeholder}

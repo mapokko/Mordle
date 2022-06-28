@@ -34,6 +34,8 @@ export const matchSlice = createSlice({
       state.words = [];
       state.position = 0;
       state.host = '';
+      hostUid = '';
+      playerName = [];
     },
   },
 });

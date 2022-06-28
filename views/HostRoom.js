@@ -1,15 +1,10 @@
-import {
-  ToastAndroid,
-  View,
-  useWindowDimensions,
-  ScrollView,
-} from 'react-native';
+import {ToastAndroid, View, ScrollView} from 'react-native';
 import React, {useState, useContext, createContext, useRef} from 'react';
 import {useSelector, useDispatch} from 'react-redux';
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
 
-import {Input, Text, Tab, TabView, Icon} from '@rneui/themed';
+import {Input, Text, Tab, TabView, Icon, Dialog} from '@rneui/themed';
 import {Button, fonts} from '@rneui/base';
 
 // import {TabView, SceneMap} from 'react-native-tab-view';
@@ -40,6 +35,8 @@ const HostRoom = ({route, navigation}) => {
   const con = useContext(RoomContext);
   const contextData = {route, chat, waitPlayers};
 
+  const [toggleExit, setToggleExit] = useState(false);
+
   useFocusEffect(
     React.useCallback(() => {
       const words = randomWords(wLen, wNum);
@@ -55,16 +52,9 @@ const HostRoom = ({route, navigation}) => {
             author: 'Mordle',
             message: 'Benvenuto nella chat!',
           },
-          {
-            author: 'fabio',
-            message: 'Ciao',
-          },
-          {
-            author: 'dio',
-            message: 'Ciao anche a te',
-          },
         ],
-        host: auth().currentUser.uid,
+        hostUid: auth().currentUser.uid,
+        hostName: auth().currentUser.displayName,
         playerNum: pNum,
         words: words,
         playersUid: initPLayers,
@@ -78,17 +68,16 @@ const HostRoom = ({route, navigation}) => {
       // dispatch(setId('ABCD1234'));
       setChat(toSend.chat);
 
-      try {
-        firestore()
-          .collection('matches')
-          .add(toSend)
-          .then(doc => {
-            dispatch(setId(doc.id));
-            ToastAndroid.show('Match created!', ToastAndroid.LONG);
-          });
-      } catch (error) {
-        console.log(error);
-      }
+      firestore()
+        .collection('matches')
+        .add(toSend)
+        .then(doc => {
+          dispatch(setId(doc.id));
+          ToastAndroid.show('Match created!', ToastAndroid.LONG);
+        })
+        .catch(err => {
+          console.log(err);
+        });
     }, []),
   );
 
@@ -97,13 +86,48 @@ const HostRoom = ({route, navigation}) => {
       const subscribe = firestore()
         .collection('matches')
         .doc(matchData.matchId)
-        .onSnapshot(docSnapshot => {
-          const data = docSnapshot.data();
-          if (data) {
-            setChat(data.chat);
-            setWaitPlayers(data.playersName);
-          }
-        });
+        .onSnapshot(
+          docSnapshot => {
+            const data = docSnapshot.data();
+            if (data) {
+              setChat(data.chat);
+              setWaitPlayers(data.playersName);
+            }
+          },
+          err => {
+            console.log(err);
+          },
+        );
+      return subscribe;
+    }, [matchData.matchId]),
+  );
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const subscribe = navigation.addListener('beforeRemove', e => {
+        e.preventDefault();
+
+        if (
+          e.data.action.payload?.name == 'Homepage' &&
+          e.data.action.type == 'NAVIGATE'
+        ) {
+          console.log('RUNNING');
+          console.log(matchData.matchId);
+          firestore()
+            .collection('matches')
+            .doc(matchData.matchId)
+            .update({canc: true})
+            .then(() => {
+              dispatch(clear());
+              navigation.dispatch(e.data.action);
+            })
+            .catch(err => {
+              console.log(err);
+            });
+        } else {
+          setToggleExit(true);
+        }
+      });
       return subscribe;
     }, [matchData.matchId]),
   );
@@ -111,6 +135,33 @@ const HostRoom = ({route, navigation}) => {
   return (
     <>
       <View>
+        <Dialog
+          isVisible={toggleExit}
+          onBackdropPress={() => {
+            setToggleExit(false);
+          }}>
+          <Dialog.Title title="ATTENZIONE" />
+          <Text style={{color: 'black', fontSize: 16}}>
+            Se esci dalla stanza, eliminerai la partita per tutti.
+          </Text>
+          <Dialog.Actions>
+            <Button
+              type="clear"
+              title="ESCI"
+              onPress={() => {
+                setToggleExit(false);
+                navigation.navigate('Homepage');
+              }}
+            />
+            <Button
+              type="clear"
+              title="ANNULLA"
+              onPress={() => {
+                setToggleExit(false);
+              }}
+            />
+          </Dialog.Actions>
+        </Dialog>
         <TopInfo id={matchData.matchId} hostName={matchData.host} />
         <Button
           buttonStyle={{marginBottom: 15}}
