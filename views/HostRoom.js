@@ -1,4 +1,4 @@
-import {ToastAndroid, View, ScrollView} from 'react-native';
+import {ToastAndroid, View, ScrollView, AppState} from 'react-native';
 import React, {useState, useContext, createContext, useRef} from 'react';
 import {useSelector, useDispatch} from 'react-redux';
 import firestore from '@react-native-firebase/firestore';
@@ -24,6 +24,8 @@ import {
 const RoomContext = createContext();
 
 const HostRoom = ({route, navigation}) => {
+  const appState = useRef(AppState.currentState);
+
   const {pNum, wNum, wLen} = route.params;
   const userData = useSelector(state => state.user);
   const matchData = useSelector(state => state.match);
@@ -129,6 +131,24 @@ const HostRoom = ({route, navigation}) => {
         }
       });
       return subscribe;
+    }, [matchData.matchId]),
+  );
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const subscription = AppState.addEventListener('change', next => {
+        if (
+          appState.current.match(/active/) &&
+          (next === 'background' || next === 'inactive') &&
+          matchData.matchId !== ''
+        ) {
+          console.log('exited');
+          console.log(matchData.matchId);
+          navigation.navigate('Homepage');
+        }
+
+        return subscription;
+      });
     }, [matchData.matchId]),
   );
 
