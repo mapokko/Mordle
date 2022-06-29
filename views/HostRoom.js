@@ -36,12 +36,20 @@ const HostRoom = ({route, navigation}) => {
   const [startBtn, setStartBtn] = useState(true);
 
   const con = useContext(RoomContext);
-  const contextData = {route, chat, waitPlayers, startBtn, navigation};
+  const contextData = {
+    route,
+    chat,
+    waitPlayers,
+    startBtn,
+    navigation,
+    setStartBtn,
+  };
 
   const [toggleExit, setToggleExit] = useState(false);
 
   useFocusEffect(
     React.useCallback(() => {
+      dispatch(clear());
       const words = randomWords(wLen, wNum);
       const initPLayers = [];
       initPLayers.push(auth().currentUser.uid);
@@ -301,6 +309,7 @@ const MatchTab = () => {
                   .update({wait: false, play: true});
 
                 con.navigation.navigate('Playboard');
+                con.setStartBtn(true);
               });
           }}
         />

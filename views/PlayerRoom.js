@@ -39,6 +39,7 @@ const PlayerRoom = ({route, navigation}) => {
 
   useFocusEffect(
     React.useCallback(() => {
+      dispatch(clear());
       firestore()
         .collection('matches')
         .doc(id)

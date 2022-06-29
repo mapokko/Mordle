@@ -14,6 +14,7 @@ import HostRoom from './views/HostRoom';
 import PlayerRoom from './views/PlayerRoom';
 import SearchMatch from './views/SearchMatch';
 import PlayBoard from './views/PlayBoard';
+import Ending from './views/Ending';
 
 export const UserContext = createContext();
 
@@ -76,6 +77,11 @@ const App = () => {
             options={{headerShown: false}}
             name="Playboard"
             component={PlayBoard}
+          />
+          <Stack.Screen
+            options={{headerShown: false}}
+            name="Ending"
+            component={Ending}
           />
         </Stack.Navigator>
       </NavigationContainer>

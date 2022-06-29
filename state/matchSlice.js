@@ -38,8 +38,9 @@ export const matchSlice = createSlice({
       state.words = [];
       state.position = 0;
       state.host = '';
-      hostUid = '';
-      playerName = [];
+      state.hostUid = '';
+      state.playerName = [];
+      state.scored = 0;
     },
   },
 });
