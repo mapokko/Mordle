@@ -36,7 +36,7 @@ const HostRoom = ({route, navigation}) => {
   const [startBtn, setStartBtn] = useState(true);
 
   const con = useContext(RoomContext);
-  const contextData = {route, chat, waitPlayers, startBtn};
+  const contextData = {route, chat, waitPlayers, startBtn, navigation};
 
   const [toggleExit, setToggleExit] = useState(false);
 
@@ -104,7 +104,9 @@ const HostRoom = ({route, navigation}) => {
             console.log(err);
           },
         );
-      return subscribe;
+      return () => {
+        subscribe();
+      };
     }, [matchData.matchId]),
   );
 
@@ -130,6 +132,11 @@ const HostRoom = ({route, navigation}) => {
             .catch(err => {
               console.log(err);
             });
+        } else if (
+          e.data.action.payload?.name == 'Playerboard' &&
+          e.data.action.type == 'NAVIGATE'
+        ) {
+          navigation.dispatch(e.data.action);
         } else {
           setToggleExit(true);
         }
@@ -150,9 +157,10 @@ const HostRoom = ({route, navigation}) => {
           console.log(matchData.matchId);
           navigation.navigate('Homepage');
         }
-
-        return subscription;
       });
+      return () => {
+        subscription.remove();
+      };
     }, [matchData.matchId]),
   );
 
@@ -281,7 +289,19 @@ const MatchTab = () => {
             firestore()
               .collection('matches')
               .doc(matchData.matchId)
-              .update({wait: false, play: true});
+              .update({
+                scores: {
+                  [auth().currentUser.uid]: {scored: 0, status: 'playing'},
+                },
+              })
+              .then(() => {
+                firestore()
+                  .collection('matches')
+                  .doc(matchData.matchId)
+                  .update({wait: false, play: true});
+
+                con.navigation.navigate('Playboard');
+              });
           }}
         />
       </View>

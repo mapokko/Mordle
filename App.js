@@ -38,7 +38,7 @@ const App = () => {
     <Provider store={store}>
       {/* <UserContext.Provider value={red}> */}
       <NavigationContainer>
-        <Stack.Navigator initialRouteName="Playboard">
+        <Stack.Navigator initialRouteName="Login">
           <Stack.Screen
             options={{headerShown: false}}
             name="Login"

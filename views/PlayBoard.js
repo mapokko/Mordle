@@ -1,20 +1,22 @@
-import {View, StyleSheet, ToastAndroid} from 'react-native';
+import {View, StyleSheet, ToastAndroid, AppState} from 'react-native';
 import React, {
   useState,
   useReducer,
   useEffect,
   createContext,
   useContext,
+  useRef,
 } from 'react';
 import {useFocusEffect} from '@react-navigation/native';
 import {useSelector, useDispatch} from 'react-redux';
+import firestore from '@react-native-firebase/firestore';
+import auth from '@react-native-firebase/auth';
 
 import CountDown from 'react-native-countdown-component';
 import {Input, Text, Tab, TabView, Icon, Dialog} from '@rneui/themed';
 import {Button} from '@rneui/base';
 
-import {reset, init, del, inc} from '../state/wordSlice';
-import {TextComponent} from 'react-native';
+import {next, incScore} from '../state/matchSlice';
 
 const initState = {
   first: '',
@@ -146,12 +148,18 @@ const decWord = w => {
   return deconstruction;
 };
 
-const PlayBoard = ({navigation}) => {
-  const [word, setWord] = useState('nano'.toUpperCase());
+const PlayBoard = ({route, navigation}) => {
+  const appState = useRef(AppState.currentState);
+
+  const matchData = useSelector(state => state.match);
+  const dispatch = useDispatch();
+
+  const [word, setWord] = useState(
+    matchData.words[matchData.position].toUpperCase(),
+  );
   const [lineNo, setLineNo] = useState(0);
   const [noAction, setNoAction] = useState(false);
   const [size, setSize] = useState(word.length);
-  const [show, setShow] = useState(true);
   const [tryNo, setTryNo] = useState(0);
   const [triggers, setTriggers] = useState([
     false,
@@ -162,8 +170,15 @@ const PlayBoard = ({navigation}) => {
     false,
   ]);
 
+  const [show, setShow] = useState(true);
+  const [stopCountdown, setStopCountdown] = useState(false);
+  const [showDialog, setShowDialog] = useState(false);
+  const [dialogMsg, setDialogMsg] = useState('');
+  const [dialogColor, setDialogColor] = useState();
+
   const [state, dispatchLocal] = useReducer(reducer, initState);
-  const matchData = useSelector(state => state.match);
+
+  const [toggleExit, setToggleExit] = useState(false);
 
   const contextData = {
     tryNo,
@@ -172,16 +187,23 @@ const PlayBoard = ({navigation}) => {
     setLineNo,
     state,
     dispatchLocal,
+    dispatch,
     noAction,
     setNoAction,
     size,
     triggers,
     setTriggers,
+    stopCountdown,
+    setShowDialog,
+    setDialogMsg,
+    setDialogColor,
+    setStopCountdown,
   };
 
   useFocusEffect(
     React.useCallback(() => {
       dispatchLocal({type: 'init', payload: word});
+      console.log(word);
     }, []),
   );
 
@@ -195,9 +217,153 @@ const PlayBoard = ({navigation}) => {
     }, [state, lineNo]),
   );
 
+  useFocusEffect(
+    React.useCallback(() => {
+      const subscribe = navigation.addListener('beforeRemove', e => {
+        e.preventDefault();
+
+        if (
+          e.data.action.payload?.name == 'Homepage' &&
+          e.data.action.type == 'NAVIGATE'
+        ) {
+          firestore()
+            .collection('matches')
+            .doc(matchData.matchId)
+            .get()
+            .then(doc => {
+              const data = doc._data;
+              firestore()
+                .collection('matches')
+                .doc(matchData.matchId)
+                .update({
+                  scores: {
+                    ...data.scores,
+                    [auth().currentUser.uid]: {
+                      scored: matchData.scored,
+                      status: 'abandon',
+                    },
+                  },
+                })
+                .then(() => {
+                  navigation.dispatch(e.data.action);
+                });
+            });
+        } else if (
+          e.data.action.payload?.name == 'Playboard' &&
+          e.data.action.type == 'REPLACE'
+        ) {
+          navigation.dispatch(e.data.action);
+        } else {
+          setToggleExit(true);
+        }
+      });
+      return subscribe;
+    }, [matchData.matchId]),
+  );
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const subscription = AppState.addEventListener('change', next => {
+        if (
+          appState.current.match(/active/) &&
+          (next === 'background' || next === 'inactive') &&
+          matchData.matchId !== ''
+        ) {
+          console.log('exited');
+          console.log(matchData.matchId);
+          navigation.navigate('Homepage');
+        }
+      });
+      return () => {
+        subscription.remove();
+      };
+    }, [matchData.matchId]),
+  );
+
+  const nextWord = () => {
+    dispatch(next());
+    if (dialogColor == 'green') {
+      firestore()
+        .collection('matches')
+        .doc(matchData.matchId)
+        .get()
+        .then(doc => {
+          const data = doc._data;
+          firestore()
+            .collection('matches')
+            .doc(matchData.matchId)
+            .update({
+              scores: {
+                ...data.scores,
+                [auth().currentUser.uid]: {
+                  scored: matchData.scored,
+                  status: 'playing',
+                },
+              },
+            });
+        });
+    }
+    navigation.replace('Playboard');
+    //use firestore to update the score
+  };
+
   return (
     <View>
       <PlayContext.Provider value={contextData}>
+        <Dialog
+          isVisible={showDialog}
+          overlayStyle={{
+            backgroundColor: dialogColor,
+            width: '90%',
+          }}>
+          <View style={{display: 'flex', alignItems: 'center'}}>
+            <Text
+              h1
+              h1Style={{color: 'white', marginTop: 20, textAlign: 'center'}}>
+              {dialogMsg}
+            </Text>
+            <Text style={{color: 'white', fontSize: 25, marginTop: 30}}>
+              La parola era: {word}!
+            </Text>
+
+            <Button
+              title="PROSSIMA PAROLA"
+              color="warning"
+              containerStyle={{fontSize: 50, color: 'black', marginTop: 40}}
+              onPress={() => {
+                nextWord();
+              }}
+            />
+          </View>
+        </Dialog>
+
+        <Dialog
+          isVisible={toggleExit}
+          onBackdropPress={() => {
+            setToggleExit(false);
+          }}>
+          <Text style={{color: 'black', fontSize: 16}}>
+            Vuoi abbandonare la partita?
+          </Text>
+          <Dialog.Actions>
+            <Button
+              type="clear"
+              title="ESCI"
+              onPress={() => {
+                setToggleExit(false);
+                navigation.navigate('Homepage');
+              }}
+            />
+            <Button
+              type="clear"
+              title="ANNULLA"
+              onPress={() => {
+                setToggleExit(false);
+              }}
+            />
+          </Dialog.Actions>
+        </Dialog>
+
         <Countdown show={show} setShow={setShow} />
         <View
           style={{
@@ -220,11 +386,9 @@ const Countdown = ({show, setShow}) => {
     <>
       {show == true ? (
         <CountDown
+          running={!con.stopCountdown}
           id="dio"
-          until={200}
-          onFinish={() => {
-            console.log('finish');
-          }}
+          until={180}
           size={30}
           digitStyle={{backgroundColor: '#f2f2f2', height: 40}}
           timeToShow={['M', 'S']}
@@ -236,6 +400,12 @@ const Countdown = ({show, setShow}) => {
               ToastAndroid.LONG,
               ToastAndroid.TOP,
             );
+          }}
+          onFinish={() => {
+            con.setDialogColor('red');
+            con.setDialogMsg('TEMPO SCADUTO!');
+            con.setShowDialog(true);
+            setShow(false);
           }}
         />
       ) : (
@@ -366,7 +536,21 @@ const Keyboard = () => {
       curr[con.lineNo] = true;
       return curr;
     });
-    // con.setAccurs(decWord(con.word));
+    if (con.state[`${translate[con.lineNo]}`] == con.word) {
+      con.dispatch(incScore());
+      con.setStopCountdown(true);
+      con.setDialogMsg('INDOVINATO!');
+      con.setDialogColor('green');
+      con.setShowDialog(true);
+      return;
+    }
+    if (con.lineNo == 5) {
+      con.setStopCountdown(true);
+      con.setDialogMsg('PAROLA NON TROVATA!');
+      con.setDialogColor('red');
+      con.setShowDialog(true);
+      return;
+    }
     con.setLineNo(con.lineNo + 1);
   };
   return (

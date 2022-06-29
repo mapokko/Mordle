@@ -96,7 +96,22 @@ const PlayerRoom = ({route, navigation}) => {
               } else {
                 setChat(data.chat);
                 setWaitPlayers(data.playersName);
-                if (data.play == true && finish == false) {
+                if (data.play == true && data.finish == false) {
+                  firestore()
+                    .collection('matches')
+                    .doc(matchData.matchId)
+                    .update({
+                      scores: {
+                        ...data.scores,
+                        [auth().currentUser.uid]: {
+                          scored: 0,
+                          status: 'playing',
+                        },
+                      },
+                    })
+                    .then(() => {
+                      navigation.navigate('Playboard');
+                    });
                 }
               }
             }
@@ -105,7 +120,9 @@ const PlayerRoom = ({route, navigation}) => {
             console.log(err);
           },
         );
-      return subscribe;
+      return () => {
+        subscribe();
+      };
     }, [matchData.matchId]),
   );
 
@@ -180,9 +197,10 @@ const PlayerRoom = ({route, navigation}) => {
           console.log(matchData.matchId);
           navigation.navigate('Homepage');
         }
-
-        return subscription;
       });
+      return () => {
+        subscription.remove();
+      };
     }, [matchData.matchId]),
   );
 

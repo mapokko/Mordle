@@ -38,7 +38,9 @@ const SearchMatch = ({navigation}) => {
           },
         );
 
-      return subscribe;
+      return () => {
+        subscribe();
+      };
     }, []),
   );
 
