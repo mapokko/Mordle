@@ -1,4 +1,4 @@
-import {View} from 'react-native';
+import {View, StyleSheet, ToastAndroid} from 'react-native';
 import React, {
   useState,
   useReducer,
@@ -10,9 +10,11 @@ import {useFocusEffect} from '@react-navigation/native';
 import {useSelector, useDispatch} from 'react-redux';
 
 import CountDown from 'react-native-countdown-component';
-
 import {Input, Text, Tab, TabView, Icon, Dialog} from '@rneui/themed';
 import {Button} from '@rneui/base';
+
+import {reset, init, del, inc} from '../state/wordSlice';
+import {TextComponent} from 'react-native';
 
 const initState = {
   first: '',
@@ -21,103 +23,182 @@ const initState = {
   fourth: '',
   fifth: '',
   sixth: '',
+  status1: [],
+  status2: [],
+  status3: [],
+  status4: [],
+  status5: [],
+  status6: [],
+  word: '',
 };
 
 const translate = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth'];
 
 function reducer(state, action) {
   switch (action.type) {
+    case 'init':
+      let tmp = {...state};
+      tmp.word = action.payload;
+      return tmp;
+
     case 'addfirst':
-      return {...state, first: state.first.concat(action.payload)};
-      break;
+      return {
+        ...state,
+        first: state.first.concat(action.payload),
+        status1: getStatus(state.word, action.payload, state.first),
+      };
     case 'removefirst':
-      return {...state, first: state.first.slice(0, -1)};
-      break;
+      return {...state, first: state.first.slice(0, -1), status1: []};
 
     case 'addsecond':
-      return {...state, second: state.second.concat(action.payload)};
-      break;
+      return {
+        ...state,
+        second: state.second.concat(action.payload),
+        status2: getStatus(state.word, action.payload, state.second),
+      };
 
     case 'removesecond':
-      return {...state, second: state.second.slice(0, -1)};
-      break;
+      return {...state, second: state.second.slice(0, -1), status2: []};
 
     case 'addthird':
-      return {...state, third: state.third.concat(action.payload)};
-      break;
+      return {
+        ...state,
+        third: state.third.concat(action.payload),
+        status3: getStatus(state.word, action.payload, state.third),
+      };
 
     case 'removethird':
-      return {...state, third: state.third.slice(0, -1)};
-      break;
+      return {...state, third: state.third.slice(0, -1), status3: []};
 
     case 'addfourth':
-      return {...state, fourth: state.fourth.concat(action.payload)};
-      break;
+      return {
+        ...state,
+        fourth: state.fourth.concat(action.payload),
+        status4: getStatus(state.word, action.payload, state.fourth),
+      };
 
     case 'removefourth':
-      return {...state, fourth: state.fourth.slice(0, -1)};
-      break;
+      return {...state, fourth: state.fourth.slice(0, -1), status4: []};
 
     case 'addfifth':
-      return {...state, fifth: state.fifth.concat(action.payload)};
-      break;
+      return {
+        ...state,
+        fifth: state.fifth.concat(action.payload),
+        status5: getStatus(state.word, action.payload, state.fifth),
+      };
 
     case 'removefifth':
-      return {...state, fifth: state.fifth.slice(0, -1)};
-      break;
+      return {...state, fifth: state.fifth.slice(0, -1), status5: []};
 
     case 'addsixth':
-      return {...state, sixth: state.sixth.concat(action.payload)};
-      break;
+      return {
+        ...state,
+        sixth: state.sixth.concat(action.payload),
+        status6: getStatus(state.word, action.payload, state.sixth),
+      };
 
     case 'removesixth':
-      return {...state, sixth: state.sixth.slice(0, -1)};
-      break;
+      return {...state, sixth: state.sixth.slice(0, -1), status6: []};
 
     default:
       throw new Error();
   }
 }
 
+const getStatus = (word, newLetter, current) => {
+  if (current.length + 1 < word.length) {
+    return [];
+  }
+  const guess = current.concat(newLetter);
+  const dec = decWord(word);
+  const sol = new Array(word.length).fill(0);
+
+  for (let i = 0; i < word.length; i++) {
+    if (word[i] == guess[i]) {
+      sol[i] = 1;
+      dec[word[i]] = dec[word[i]] - 1;
+    }
+  }
+
+  for (let i = 0; i < word.length; i++) {
+    if (sol[i] == 0 && dec.hasOwnProperty(guess[i])) {
+      if (dec[guess[i]] > 0) {
+        sol[i] = 2;
+        dec[guess[i]] = dec[guess[i]] - 1;
+      }
+    }
+  }
+
+  return sol;
+};
+
 const PlayContext = createContext();
 
+const decWord = w => {
+  const deconstruction = {};
+  for (let i = 0; i < w.length; i++) {
+    if (deconstruction.hasOwnProperty(w[i])) {
+      deconstruction[w[i]] = deconstruction[w[i]] + 1;
+    } else {
+      deconstruction[w[i]] = 1;
+    }
+  }
+  return deconstruction;
+};
+
 const PlayBoard = ({navigation}) => {
-  const words = ['cipro', 'ibiza', 'greca'];
-  const [position, setPosition] = useState(0);
+  const [word, setWord] = useState('nano'.toUpperCase());
+  const [lineNo, setLineNo] = useState(0);
   const [noAction, setNoAction] = useState(false);
-  const [size, setSize] = useState(5);
+  const [size, setSize] = useState(word.length);
   const [show, setShow] = useState(true);
   const [tryNo, setTryNo] = useState(0);
+  const [triggers, setTriggers] = useState([
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+  ]);
 
   const [state, dispatchLocal] = useReducer(reducer, initState);
   const matchData = useSelector(state => state.match);
 
   const contextData = {
     tryNo,
-    words,
-    position,
-    setPosition,
+    word,
+    lineNo,
+    setLineNo,
     state,
     dispatchLocal,
     noAction,
     setNoAction,
     size,
+    triggers,
+    setTriggers,
   };
 
-  useEffect(() => {
-    console.log('some changed');
-    console.log(state);
-    if (state[`${translate[position]}`].length == size) {
-      setNoAction(true);
-    } else if (state[`${translate[position]}`].length < size) {
-      setNoAction(false);
-    }
-  }, [state, position]);
+  useFocusEffect(
+    React.useCallback(() => {
+      dispatchLocal({type: 'init', payload: word});
+    }, []),
+  );
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (state[`${translate[lineNo]}`].length == size) {
+        setNoAction(true);
+      } else if (state[`${translate[lineNo]}`].length < size) {
+        setNoAction(false);
+      }
+    }, [state, lineNo]),
+  );
 
   return (
     <View>
-      <Countdown show={show} setShow={setShow} />
       <PlayContext.Provider value={contextData}>
+        <Countdown show={show} setShow={setShow} />
         <View
           style={{
             display: 'flex',
@@ -134,6 +215,7 @@ const PlayBoard = ({navigation}) => {
 };
 
 const Countdown = ({show, setShow}) => {
+  const con = useContext(PlayContext);
   return (
     <>
       {show == true ? (
@@ -143,12 +225,18 @@ const Countdown = ({show, setShow}) => {
           onFinish={() => {
             console.log('finish');
           }}
-          onPress={() => alert('hello')}
           size={30}
           digitStyle={{backgroundColor: '#f2f2f2', height: 40}}
           timeToShow={['M', 'S']}
           timeLabels={{m: '', s: ''}}
           showSeparator
+          onPress={() => {
+            ToastAndroid.showWithGravity(
+              con.word,
+              ToastAndroid.LONG,
+              ToastAndroid.TOP,
+            );
+          }}
         />
       ) : (
         <></>
@@ -179,6 +267,20 @@ const InputBoard = () => {
 
 const SingleRow = ({tryPos}) => {
   const con = useContext(PlayContext);
+  const [colorArray, setColorArray] = useState(['', '', '', '', '']);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      setColorArray(con.state[`status${tryPos + 1}`]);
+    }, [con.triggers[tryPos]]),
+  );
+
+  const setColor = (i, c) => {
+    setColorArray(curr => {
+      curr[i] = c;
+      return curr;
+    });
+  };
 
   return (
     <View
@@ -191,24 +293,49 @@ const SingleRow = ({tryPos}) => {
       }}>
       {[...Array(con.size).keys()].map((value, index) => {
         const guess = con.state[`${translate[tryPos]}`];
+        let lett;
         if (guess.length < index + 1) {
-          return <LetterInput lett="" />;
+          lett = '';
         } else {
-          return <LetterInput lett={guess.charAt(index)} />;
+          lett = guess.charAt(index);
         }
+        return (
+          <LetterInput
+            key={index}
+            lett={lett}
+            trigger={con.triggers[tryPos]}
+            color={colorArray[index]}
+          />
+        );
       })}
     </View>
   );
 };
 
-const LetterInput = ({lett}) => {
+const LetterInput = ({lett, trigger, color}) => {
+  const con = useContext(PlayContext);
+
+  const getColor = v => {
+    switch (v) {
+      case 0:
+        return 'gray';
+        break;
+      case 1:
+        return 'green';
+        break;
+      case 2:
+        return 'yellow';
+        break;
+    }
+  };
+
   return (
     <Text
       style={{
         height: 45,
         width: 40,
         marginHorizontal: 5,
-        backgroundColor: 'white',
+        backgroundColor: trigger ? getColor(color) : 'white',
         borderRadius: 10,
         textAlign: 'center',
         fontSize: 35,
@@ -217,6 +344,8 @@ const LetterInput = ({lett}) => {
     </Text>
   );
 };
+
+const letterStyle = StyleSheet.create({});
 
 const alphArr = [
   ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
@@ -228,13 +357,17 @@ const Keyboard = () => {
   const con = useContext(PlayContext);
 
   const removeLetter = () => {
-    const k = `remove${translate[con.position]}`;
-    console.log(k);
+    const k = `remove${translate[con.lineNo]}`;
     con.dispatchLocal({type: k});
   };
 
   const confirm = () => {
-    con.setPosition(con.position + 1);
+    con.setTriggers(curr => {
+      curr[con.lineNo] = true;
+      return curr;
+    });
+    // con.setAccurs(decWord(con.word));
+    con.setLineNo(con.lineNo + 1);
   };
   return (
     <View
@@ -298,8 +431,8 @@ const Letter = ({l}) => {
 
   const addLetter = l => {
     if (!con.noAction) {
-      const k = `add${translate[con.position]}`;
-      console.log(k);
+      const k = `add${translate[con.lineNo]}`;
+      // console.log(k);
       con.dispatchLocal({type: k, payload: l});
     }
   };
