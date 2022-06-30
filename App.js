@@ -3,6 +3,7 @@ import React, {createContext, useState} from 'react';
 
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import {createStackNavigator} from '@react-navigation/stack';
 
 import {Provider} from 'react-redux';
 import store from './state/store';
@@ -15,6 +16,8 @@ import PlayerRoom from './views/PlayerRoom';
 import SearchMatch from './views/SearchMatch';
 import PlayBoard from './views/PlayBoard';
 import Ending from './views/Ending';
+
+import Tmp from './views/Tmp';
 
 export const UserContext = createContext();
 
@@ -77,6 +80,11 @@ const App = () => {
             options={{headerShown: false}}
             name="Playboard"
             component={PlayBoard}
+          />
+          <Stack.Screen
+            options={{headerShown: false}}
+            name="Tmp"
+            component={Tmp}
           />
           <Stack.Screen
             options={{headerShown: false}}

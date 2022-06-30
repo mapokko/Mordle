@@ -41,7 +41,9 @@ const Login = ({navigation}) => {
         }
       };
       const subscriber = auth().onAuthStateChanged(checkStatus);
-      return subscriber; // unsubscribe on unmount
+      return () => {
+        subscriber();
+      }; // unsubscribe on unmount
     }, []),
   );
 

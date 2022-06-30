@@ -2,7 +2,7 @@ import {View, ScrollView, StyleSheet, TouchableOpacity} from 'react-native';
 import React, {useState} from 'react';
 
 import {Button, color, fonts} from '@rneui/base';
-import {Input, Text, Card, Icon} from '@rneui/themed';
+import {Input, Text, Card, Icon, Dialog} from '@rneui/themed';
 
 import {useFocusEffect} from '@react-navigation/native';
 
@@ -12,6 +12,8 @@ import {shallowEqual} from 'react-redux';
 const SearchMatch = ({navigation}) => {
   const [matchList, setMatchList] = useState([]);
   const [matchIds, setMatchIds] = useState([]);
+
+  const [loading, setLoading] = useState(true);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -31,6 +33,7 @@ const SearchMatch = ({navigation}) => {
               tmp.push(value.id);
             });
             setMatchIds(tmp);
+            setLoading(false);
           },
           err => {
             console.log('IN FETCH LIST ERROR');
@@ -46,6 +49,14 @@ const SearchMatch = ({navigation}) => {
 
   return (
     <ScrollView>
+      <Dialog
+        isVisible={loading}
+        overlayStyle={{
+          backgroundColor: 'none',
+          shadowColor: 'rgba(255, 255, 255, 0)',
+        }}>
+        <Dialog.Loading />
+      </Dialog>
       <Text h3 style={{width: '100%', textAlign: 'center', paddingTop: 10}}>
         Partite in attesa
       </Text>

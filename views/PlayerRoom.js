@@ -182,7 +182,9 @@ const PlayerRoom = ({route, navigation}) => {
           setToggleExit(true);
         }
       });
-      return subscribe;
+      return () => {
+        subscribe();
+      };
     }, [matchData.matchId]),
   );
 

@@ -3,7 +3,7 @@ import React, {useState, useEffect, useContext, createContext} from 'react';
 
 import {Button, fonts} from '@rneui/base';
 import {Input, Text as TextE} from '@rneui/themed';
-import {Overlay} from '@rneui/themed';
+import {Overlay, Dialog} from '@rneui/themed';
 
 import {Dropdown} from 'react-native-element-dropdown';
 
@@ -25,6 +25,8 @@ const Home = ({navigation}) => {
   const [user, setUser] = useState();
   const con = useContext(UserContext);
 
+  const [toggleLoading, setToggleLoading] = useState(false);
+
   useFocusEffect(
     React.useCallback(() => {
       const subscribe = navigation.addListener('beforeRemove', e => {
@@ -36,8 +38,10 @@ const Home = ({navigation}) => {
           navigation.dispatch(e.data.action);
         }
       });
-      return subscribe;
-    }),
+      return () => {
+        subscribe();
+      };
+    }, []),
   );
 
   const onAuthStateChanged = u => {
@@ -54,8 +58,10 @@ const Home = ({navigation}) => {
   useFocusEffect(
     React.useCallback(() => {
       const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
-      return subscriber; // unsubscribe on unmount
-    }),
+      return () => {
+        subscriber();
+      }; // unsubscribe on unmount
+    }, []),
   );
 
   const showUser = () => {
@@ -85,42 +91,56 @@ const Home = ({navigation}) => {
         display: 'flex',
         alignItems: 'center',
         width: '100%',
+        height: '100%',
       }}>
+      <Dialog
+        isVisible={toggleLoading}
+        overlayStyle={{
+          backgroundColor: 'none',
+          shadowColor: 'rgba(255, 255, 255, 0)',
+        }}>
+        <Dialog.Loading />
+      </Dialog>
       <Text style={{color: 'black', fontSize: 20, marginVertical: 20}}>
         Ciao {userData.username ? userData.username : ''}!
       </Text>
-      <Button
+      {/* <Button
         title="Clicca"
         onPress={() => {
-          showUser();
+          console.log(navigation.getState());
         }}
-      />
+      /> */}
 
-      <Button
-        title="CREA PARTITA"
-        onPress={() => {
-          toggleOverlay();
-        }}
-      />
+      <View>
+        <Button
+          title="CREA PARTITA"
+          buttonStyle={{marginBottom: '5%'}}
+          onPress={() => {
+            toggleOverlay();
+          }}
+        />
 
-      <Button
-        title="CERCA PARTITA"
-        onPress={() => {
-          navigation.navigate('Search');
-        }}
-      />
+        <Button
+          title="CERCA PARTITA"
+          buttonStyle={{marginBottom: '5%'}}
+          onPress={() => {
+            navigation.navigate('Search');
+          }}
+        />
 
-      <Button
-        title="LOG OUT"
-        onPress={() => {
-          signOut();
-        }}
-      />
+        <Button
+          title="LOG OUT"
+          onPress={() => {
+            signOut();
+          }}
+        />
+      </View>
 
       <AddUsername
         showOverlay={showOverlay}
         toggleOverlay={toggleOverlay}
         navigation={navigation}
+        setToggleLoading={setToggleLoading}
       />
     </View>
   );
@@ -159,7 +179,12 @@ const initVals = {
 
 const SelectData = createContext();
 
-const AddUsername = ({showOverlay, toggleOverlay, navigation}) => {
+const AddUsername = ({
+  showOverlay,
+  toggleOverlay,
+  navigation,
+  setToggleLoading,
+}) => {
   const [vals, setVals] = useState(initVals);
   const v = {vals, setVals};
 
@@ -214,7 +239,9 @@ const AddUsername = ({showOverlay, toggleOverlay, navigation}) => {
           buttonStyle={{margin: 5}}
           onPress={() => {
             toggleOverlay();
+            setToggleLoading(true);
             navigation.navigate('Hostroom', vals);
+            setToggleLoading(false);
           }}
         />
       </View>

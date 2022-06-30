@@ -155,8 +155,9 @@ const PlayBoard = ({route, navigation}) => {
   const dispatch = useDispatch();
 
   const [word, setWord] = useState(
-    matchData.words[matchData.position].toUpperCase(),
+    matchData.words[matchData.position - 1].toUpperCase(),
   );
+  const [gameEnd, setGameEnd] = useState(false);
   const [lineNo, setLineNo] = useState(0);
   const [noAction, setNoAction] = useState(false);
   const [size, setSize] = useState(word.length);
@@ -198,6 +199,7 @@ const PlayBoard = ({route, navigation}) => {
     setDialogMsg,
     setDialogColor,
     setStopCountdown,
+    setGameEnd,
   };
 
   useFocusEffect(
@@ -252,12 +254,21 @@ const PlayBoard = ({route, navigation}) => {
           e.data.action.payload?.name == 'Playboard' &&
           e.data.action.type == 'REPLACE'
         ) {
+          console.log('REPLACING PLAYBOARD');
+          navigation.dispatch(e.data.action);
+        } else if (
+          e.data.action.payload?.name == 'Ending' &&
+          e.data.action.type == 'REPLACE'
+        ) {
+          console.log('NAVIGATING TO ENDING');
           navigation.dispatch(e.data.action);
         } else {
           setToggleExit(true);
         }
       });
-      return subscribe;
+      return () => {
+        subscribe();
+      };
     }, [matchData.matchId]),
   );
 
@@ -280,33 +291,55 @@ const PlayBoard = ({route, navigation}) => {
     }, [matchData.matchId]),
   );
 
-  const nextWord = () => {
-    dispatch(next());
-    if (dialogColor == 'green') {
-      firestore()
-        .collection('matches')
-        .doc(matchData.matchId)
-        .get()
-        .then(doc => {
-          const data = doc._data;
-          firestore()
-            .collection('matches')
-            .doc(matchData.matchId)
-            .update({
-              scores: {
-                ...data.scores,
-                [auth().currentUser.uid]: {
-                  scored: matchData.scored,
-                  status: 'playing',
-                },
-              },
-            });
-        });
-    }
-    navigation.replace('Playboard');
-    //use firestore to update the score
-  };
+  useFocusEffect(
+    React.useCallback(() => {
+      let timer;
+      if (showDialog == true) {
+        timer = setTimeout(() => {
+          nextWord();
+        }, 10000);
+      }
+      return () => {
+        clearTimeout(timer);
+      };
+    }, [showDialog]),
+  );
 
+  const nextWord = () => {
+    let status;
+    if (matchData.position == matchData.words.length) {
+      status = 'finish';
+    } else {
+      status = 'playing';
+    }
+    firestore()
+      .collection('matches')
+      .doc(matchData.matchId)
+      .get()
+      .then(doc => {
+        const data = doc._data;
+        firestore()
+          .collection('matches')
+          .doc(matchData.matchId)
+          .update({
+            scores: {
+              ...data.scores,
+              [auth().currentUser.uid]: {
+                scored: matchData.scored,
+                status: status,
+              },
+            },
+          });
+      });
+
+    if (status == 'playing') {
+      dispatch(next());
+      navigation.replace('Playboard');
+    } else {
+      navigation.replace('Ending');
+    }
+    setShowDialog(false);
+  };
   return (
     <View>
       <PlayContext.Provider value={contextData}>
@@ -327,7 +360,7 @@ const PlayBoard = ({route, navigation}) => {
             </Text>
 
             <Button
-              title="PROSSIMA PAROLA"
+              title={!gameEnd ? 'PROSSIMA PAROLA' : 'FINISCI PARTITA'}
               color="warning"
               containerStyle={{fontSize: 50, color: 'black', marginTop: 40}}
               onPress={() => {
@@ -364,13 +397,12 @@ const PlayBoard = ({route, navigation}) => {
           </Dialog.Actions>
         </Dialog>
 
-        <Countdown show={show} setShow={setShow} />
+        <Countdown show={show} time={180} />
         <View
           style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            height: show ? '86%' : '100%',
           }}>
           <InputBoard size={5} />
           <Keyboard />
@@ -380,15 +412,16 @@ const PlayBoard = ({route, navigation}) => {
   );
 };
 
-const Countdown = ({show, setShow}) => {
+const Countdown = ({show, time}) => {
   const con = useContext(PlayContext);
+  const matchData = useSelector(state => state.match);
   return (
     <>
       {show == true ? (
         <CountDown
           running={!con.stopCountdown}
           id="dio"
-          until={180}
+          until={time}
           size={30}
           digitStyle={{backgroundColor: '#f2f2f2', height: 40}}
           timeToShow={['M', 'S']}
@@ -405,7 +438,9 @@ const Countdown = ({show, setShow}) => {
             con.setDialogColor('red');
             con.setDialogMsg('TEMPO SCADUTO!');
             con.setShowDialog(true);
-            setShow(false);
+            if (matchData.position == matchData.words.length) {
+              con.setGameEnd(true);
+            }
           }}
         />
       ) : (
@@ -525,6 +560,7 @@ const alphArr = [
 
 const Keyboard = () => {
   const con = useContext(PlayContext);
+  const matchData = useSelector(state => state.match);
 
   const removeLetter = () => {
     const k = `remove${translate[con.lineNo]}`;
@@ -542,16 +578,17 @@ const Keyboard = () => {
       con.setDialogMsg('INDOVINATO!');
       con.setDialogColor('green');
       con.setShowDialog(true);
-      return;
-    }
-    if (con.lineNo == 5) {
+    } else if (con.lineNo == 5) {
       con.setStopCountdown(true);
       con.setDialogMsg('PAROLA NON TROVATA!');
       con.setDialogColor('red');
       con.setShowDialog(true);
-      return;
+    } else {
+      con.setLineNo(con.lineNo + 1);
     }
-    con.setLineNo(con.lineNo + 1);
+    if (matchData.position == matchData.words.length) {
+      con.setGameEnd(true);
+    }
   };
   return (
     <View
@@ -616,7 +653,6 @@ const Letter = ({l}) => {
   const addLetter = l => {
     if (!con.noAction) {
       const k = `add${translate[con.lineNo]}`;
-      // console.log(k);
       con.dispatchLocal({type: k, payload: l});
     }
   };

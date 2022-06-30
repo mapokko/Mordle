@@ -5,7 +5,7 @@ export const matchSlice = createSlice({
   initialState: {
     matchId: '',
     words: [],
-    position: 0,
+    position: 1,
     host: '',
     hostUid: '',
     playerName: [],
@@ -36,7 +36,7 @@ export const matchSlice = createSlice({
     clear: state => {
       state.matchId = '';
       state.words = [];
-      state.position = 0;
+      state.position = 1;
       state.host = '';
       state.hostUid = '';
       state.playerName = [];

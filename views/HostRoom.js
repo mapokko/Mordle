@@ -35,6 +35,8 @@ const HostRoom = ({route, navigation}) => {
 
   const [startBtn, setStartBtn] = useState(true);
 
+  const [loading, setLoading] = useState(true);
+
   const con = useContext(RoomContext);
   const contextData = {
     route,
@@ -43,6 +45,7 @@ const HostRoom = ({route, navigation}) => {
     startBtn,
     navigation,
     setStartBtn,
+    setLoading,
   };
 
   const [toggleExit, setToggleExit] = useState(false);
@@ -84,7 +87,7 @@ const HostRoom = ({route, navigation}) => {
         .add(toSend)
         .then(doc => {
           dispatch(setId(doc.id));
-          ToastAndroid.show('Match created!', ToastAndroid.LONG);
+          setLoading(false);
         })
         .catch(err => {
           console.log(err);
@@ -105,6 +108,8 @@ const HostRoom = ({route, navigation}) => {
               setWaitPlayers(data.playersName);
               if (data.playerNum == data.playersUid.length) {
                 setStartBtn(false);
+              } else {
+                setStartBtn(true);
               }
             }
           },
@@ -149,7 +154,9 @@ const HostRoom = ({route, navigation}) => {
           setToggleExit(true);
         }
       });
-      return subscribe;
+      return () => {
+        subscribe();
+      };
     }, [matchData.matchId]),
   );
 
@@ -175,6 +182,14 @@ const HostRoom = ({route, navigation}) => {
   return (
     <>
       <View>
+        <Dialog
+          isVisible={loading}
+          overlayStyle={{
+            backgroundColor: 'none',
+            shadowColor: 'rgba(255, 255, 255, 0)',
+          }}>
+          <Dialog.Loading />
+        </Dialog>
         <Dialog
           isVisible={toggleExit}
           onBackdropPress={() => {
@@ -294,6 +309,7 @@ const MatchTab = () => {
           title={con.startBtn ? 'Aspetto giocatori...' : 'Comincia la partita!'}
           color="success"
           onPress={() => {
+            con.setLoading(true);
             firestore()
               .collection('matches')
               .doc(matchData.matchId)
@@ -306,10 +322,12 @@ const MatchTab = () => {
                 firestore()
                   .collection('matches')
                   .doc(matchData.matchId)
-                  .update({wait: false, play: true});
-
-                con.navigation.navigate('Playboard');
-                con.setStartBtn(true);
+                  .update({wait: false, play: true})
+                  .then(() => {
+                    con.setLoading(false);
+                    con.navigation.navigate('Playboard');
+                    con.setStartBtn(true);
+                  });
               });
           }}
         />
