@@ -148,6 +148,15 @@ const decWord = w => {
   return deconstruction;
 };
 
+// an object with every uppercase letter as key
+const getUppercaseLetters = () => {
+  const letters = {};
+  for (let i = 65; i <= 90; i++) {
+    letters[String.fromCharCode(i)] = -1;
+  }
+  return letters;
+};
+
 const PlayBoard = ({route, navigation}) => {
   const appState = useRef(AppState.currentState);
 
@@ -170,6 +179,7 @@ const PlayBoard = ({route, navigation}) => {
     false,
     false,
   ]);
+  const [alphabetState, setAlphabetState] = useState(getUppercaseLetters());
 
   const [show, setShow] = useState(true);
   const [stopCountdown, setStopCountdown] = useState(false);
@@ -194,6 +204,8 @@ const PlayBoard = ({route, navigation}) => {
     size,
     triggers,
     setTriggers,
+    alphabetState,
+    setAlphabetState,
     stopCountdown,
     setShowDialog,
     setDialogMsg,
@@ -477,6 +489,35 @@ const SingleRow = ({tryPos}) => {
   useFocusEffect(
     React.useCallback(() => {
       setColorArray(con.state[`status${tryPos + 1}`]);
+      const statusArray = con.state[`status${tryPos + 1}`];
+
+      const letterStatus = {};
+
+      for (let i = 0; i < con.state[translate[tryPos]].length; i++) {
+        const letter = con.state[translate[tryPos]][i];
+        letterStatus[letter] = con.alphabetState[letter];
+      }
+      console.log('PRIMA');
+      console.log(letterStatus);
+
+      for (let i = 0; i < statusArray.length; i++) {}
+      for (let i = 0; i < statusArray.length; i++) {
+        const letter = con.state[translate[tryPos]][i];
+        if (
+          letterStatus[letter] == -1 ||
+          (letterStatus[letter] == 2 && statusArray[i] == 1)
+        ) {
+          letterStatus[letter] = statusArray[i];
+        }
+      }
+      console.log('DOPO');
+      console.log(letterStatus);
+      con.setAlphabetState(prev => {
+        return {
+          ...prev,
+          ...letterStatus,
+        };
+      });
     }, [con.triggers[tryPos]]),
   );
 
@@ -649,6 +690,7 @@ const Keyboard = () => {
 
 const Letter = ({l}) => {
   const con = useContext(PlayContext);
+  const [color, setColor] = useState('white');
 
   const addLetter = l => {
     if (!con.noAction) {
@@ -656,6 +698,28 @@ const Letter = ({l}) => {
       con.dispatchLocal({type: k, payload: l});
     }
   };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      switch (con.alphabetState[l]) {
+        case -1:
+          setColor('white');
+          break;
+        case 0:
+          setColor('gray');
+          break;
+        case 1:
+          setColor('green');
+          break;
+        case 2:
+          setColor('yellow');
+          break;
+        default:
+          setColor('red');
+          break;
+      }
+    }, [con.alphabetState[l]]),
+  );
   return (
     <Text
       style={{
@@ -667,9 +731,12 @@ const Letter = ({l}) => {
         borderRadius: 5,
         width: 35,
         textAlign: 'center',
+        backgroundColor: color,
       }}
       onPress={() => {
-        addLetter(l);
+        if (con.alphabetState[l] != 0) {
+          addLetter(l);
+        }
       }}>
       {l}
     </Text>
