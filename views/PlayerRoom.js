@@ -37,6 +37,8 @@ const PlayerRoom = ({route, navigation}) => {
 
   const contextData = {route, chat, waitPlayers};
 
+  const [loading, setLoading] = useState(true);
+
   useFocusEffect(
     React.useCallback(() => {
       dispatch(clear());
@@ -75,6 +77,7 @@ const PlayerRoom = ({route, navigation}) => {
                 },
               ],
             });
+          setLoading(false);
         })
         .catch(err => {
           console.log('ERR IN FETCH INIT DATA PLAYERROOM');
@@ -211,6 +214,16 @@ const PlayerRoom = ({route, navigation}) => {
     <>
       <View>
         <Dialog
+          animationType="fade"
+          isVisible={loading}
+          overlayStyle={{
+            backgroundColor: 'none',
+            shadowColor: 'rgba(255, 255, 255, 0)',
+          }}>
+          <Dialog.Loading />
+        </Dialog>
+        <Dialog
+          animationType="fade"
           isVisible={toggleExit}
           onBackdropPress={() => {
             setToggleExit(false);
@@ -237,7 +250,7 @@ const PlayerRoom = ({route, navigation}) => {
           </Dialog.Actions>
         </Dialog>
 
-        <Dialog isVisible={toggleCanc}>
+        <Dialog isVisible={toggleCanc} animationType="fade">
           <Text style={{color: 'black', fontSize: 16}}>
             L'Host ha cancellato la partita.
           </Text>

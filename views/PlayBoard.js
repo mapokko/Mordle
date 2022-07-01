@@ -117,7 +117,7 @@ const getStatus = (word, newLetter, current) => {
 
   for (let i = 0; i < word.length; i++) {
     if (word[i] == guess[i]) {
-      sol[i] = 1;
+      sol[i] = 2;
       dec[word[i]] = dec[word[i]] - 1;
     }
   }
@@ -125,7 +125,7 @@ const getStatus = (word, newLetter, current) => {
   for (let i = 0; i < word.length; i++) {
     if (sol[i] == 0 && dec.hasOwnProperty(guess[i])) {
       if (dec[guess[i]] > 0) {
-        sol[i] = 2;
+        sol[i] = 1;
         dec[guess[i]] = dec[guess[i]] - 1;
       }
     }
@@ -356,6 +356,7 @@ const PlayBoard = ({route, navigation}) => {
     <View>
       <PlayContext.Provider value={contextData}>
         <Dialog
+          animationType="fade"
           isVisible={showDialog}
           overlayStyle={{
             backgroundColor: dialogColor,
@@ -383,6 +384,7 @@ const PlayBoard = ({route, navigation}) => {
         </Dialog>
 
         <Dialog
+          animationType="fade"
           isVisible={toggleExit}
           onBackdropPress={() => {
             setToggleExit(false);
@@ -500,13 +502,9 @@ const SingleRow = ({tryPos}) => {
       console.log('PRIMA');
       console.log(letterStatus);
 
-      for (let i = 0; i < statusArray.length; i++) {}
       for (let i = 0; i < statusArray.length; i++) {
         const letter = con.state[translate[tryPos]][i];
-        if (
-          letterStatus[letter] == -1 ||
-          (letterStatus[letter] == 2 && statusArray[i] == 1)
-        ) {
+        if (letterStatus[letter] < statusArray[i]) {
           letterStatus[letter] = statusArray[i];
         }
       }
@@ -566,10 +564,10 @@ const LetterInput = ({lett, trigger, color}) => {
       case 0:
         return 'gray';
         break;
-      case 1:
+      case 2:
         return 'green';
         break;
-      case 2:
+      case 1:
         return 'yellow';
         break;
     }
@@ -708,10 +706,10 @@ const Letter = ({l}) => {
         case 0:
           setColor('gray');
           break;
-        case 1:
+        case 2:
           setColor('green');
           break;
-        case 2:
+        case 1:
           setColor('yellow');
           break;
         default:

@@ -7,6 +7,9 @@ import {Overlay, Dialog} from '@rneui/themed';
 
 import {Dropdown} from 'react-native-element-dropdown';
 
+import {Select, Box} from 'native-base';
+import {CheckIcon} from 'native-base';
+
 import auth from '@react-native-firebase/auth';
 import {CommonActions} from '@react-navigation/native';
 import {StackActions, useFocusEffect} from '@react-navigation/native';
@@ -136,7 +139,7 @@ const Home = ({navigation}) => {
         />
       </View>
 
-      <AddUsername
+      <CreateMatchDialog
         showOverlay={showOverlay}
         toggleOverlay={toggleOverlay}
         navigation={navigation}
@@ -174,12 +177,12 @@ const wordsLen = [
 const initVals = {
   pNum: 2,
   wNum: 3,
-  wLen: 5,
+  wLen: 4,
 };
 
 const SelectData = createContext();
 
-const AddUsername = ({
+const CreateMatchDialog = ({
   showOverlay,
   toggleOverlay,
   navigation,
@@ -190,6 +193,12 @@ const AddUsername = ({
 
   return (
     <Overlay
+      onShow={() => {
+        console.log('doing');
+        setVals(() => {
+          return {...initVals};
+        });
+      }}
       animationType="fade"
       isVisible={showOverlay}
       overlayStyle={{width: '90%', display: 'flex', alignItems: 'center'}}>
@@ -232,6 +241,7 @@ const AddUsername = ({
           buttonStyle={{margin: 5}}
           onPress={() => {
             toggleOverlay();
+            console.log(vals);
           }}
         />
         <Button
@@ -258,32 +268,29 @@ const SelectDropdown = ({label, data, placeholder, k}) => {
       <Text style={{color: 'black', fontSize: 17, marginBottom: 5}}>
         {label}
       </Text>
-      <Dropdown
-        value={vals[k]}
-        onFocus={() => setIsFocus(true)}
-        onBlur={() => setIsFocus(false)}
-        data={data}
-        style={[
-          {
-            width: '100%',
-            borderColor: 'gray',
-            borderWidth: 1.5,
-            borderRadius: 8,
-            paddingHorizontal: 5,
-          },
-          isFocus && {borderColor: 'blue'},
-        ]}
-        selectedTextStyle={{color: 'black'}}
-        labelField="label"
-        valueField="value"
-        placeholder={placeholder}
-        onChange={n => {
-          setVals(cur => {
-            cur[k] = n.value;
-            return cur;
-          });
-        }}
-      />
+
+      <Box w={'100%'}>
+        <Select
+          w={'100%'}
+          defaultValue={data[0].value}
+          size="xl"
+          _selectedItem={{
+            bg: 'teal.600',
+            endIcon: <CheckIcon size={5} />,
+          }}
+          onValueChange={n => {
+            setVals(cur => {
+              cur[k] = n;
+              return cur;
+            });
+          }}>
+          {data.map(({label, value}, index) => (
+            <Select.Item key={index} label={label} value={value}>
+              {label}
+            </Select.Item>
+          ))}
+        </Select>
+      </Box>
     </View>
   );
 };

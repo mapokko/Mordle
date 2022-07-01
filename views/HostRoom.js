@@ -183,6 +183,7 @@ const HostRoom = ({route, navigation}) => {
     <>
       <View>
         <Dialog
+          animationType="fade"
           isVisible={loading}
           overlayStyle={{
             backgroundColor: 'none',
@@ -191,6 +192,7 @@ const HostRoom = ({route, navigation}) => {
           <Dialog.Loading />
         </Dialog>
         <Dialog
+          animationType="fade"
           isVisible={toggleExit}
           onBackdropPress={() => {
             setToggleExit(false);
