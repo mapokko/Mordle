@@ -122,12 +122,6 @@ const Ending = ({route, navigation}) => {
         height: '100%',
         backgroundColor: '#2289dc',
       }}>
-      <Button
-        title="ss"
-        onPress={() => {
-          console.log(navigation.getState());
-        }}
-      />
       <Dialog
         isVisible={toggleLoading}
         overlayStyle={{
