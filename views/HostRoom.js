@@ -26,7 +26,7 @@ const RoomContext = createContext();
 const HostRoom = ({route, navigation}) => {
   const appState = useRef(AppState.currentState);
 
-  const {pNum, wNum, wLen} = route.params;
+  const {pNum, wNum, wLen, pwd} = route.params;
   const matchData = useSelector(state => state.match);
   const dispatch = useDispatch();
 
@@ -69,6 +69,7 @@ const HostRoom = ({route, navigation}) => {
         ],
         hostUid: auth().currentUser.uid,
         hostName: auth().currentUser.displayName,
+        password: pwd,
         playerNum: pNum,
         words: words,
         playersUid: initPLayers,

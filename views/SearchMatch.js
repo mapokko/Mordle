@@ -6,15 +6,20 @@ import {useFocusEffect} from '@react-navigation/native';
 import firestore from '@react-native-firebase/firestore';
 import {shallowEqual} from 'react-redux';
 
-import {Text, Card, Icon, Dialog} from '@rneui/themed';
+import {Text, Card, Icon, Dialog, Divider} from '@rneui/themed';
 import {Button, color, fonts} from '@rneui/base';
 
-import {Input, Box} from 'native-base';
+import {Input, Box, WarningOutlineIcon, FormControl} from 'native-base';
 
 const SearchMatch = ({navigation}) => {
   const [matchList, setMatchList] = useState([]);
   const [filteredMatchList, setFilteredMatchList] = useState([]);
   const [search, setSearch] = useState('');
+
+  const [showPwdDialog, setShowPwdDialog] = useState(false);
+  const [inputPwd, setInputPwd] = useState('');
+  const [validPwd, setValidPwd] = useState(true);
+  const [matchIndex, setMatchIndex] = useState();
 
   const [loading, setLoading] = useState(true);
 
@@ -46,29 +51,17 @@ const SearchMatch = ({navigation}) => {
     }, []),
   );
 
-  const filterResults = () => {
-    setFilteredMatchList([]);
-    if (search.length > 0) {
-      matchList.forEach((value, index) => {
-        if (value.data().hostName.includes(search)) {
-          setFilteredMatchList([...filteredMatchList, value]);
-        }
-      });
-    } else {
-      setFilteredMatchList(matchList);
-    }
-    console.log(filteredMatchList.length);
-  };
-
   useFocusEffect(
     React.useCallback(() => {
       setFilteredMatchList([]);
       if (search.length > 0) {
         const tmp = [];
         matchList.forEach((value, index) => {
-          console.log(value.data().hostName);
           if (
-            value.data().hostName.toLowerCase().includes(search.toLowerCase())
+            value
+              .data()
+              .hostName.toLowerCase()
+              .startsWith(search.toLowerCase(), 0)
           ) {
             tmp.push(value);
           }
@@ -80,6 +73,31 @@ const SearchMatch = ({navigation}) => {
     }, [search]),
   );
 
+  const withPwd = () => {
+    const match = filteredMatchList[matchIndex];
+    console.log(match.data().password);
+    if (inputPwd == match.data().password) {
+      enterRoom(match);
+    } else {
+      setInputPwd('');
+      setValidPwd(false);
+      setTimeout(() => {
+        setValidPwd(true);
+      }, 4000);
+    }
+  };
+
+  const enterRoom = value => {
+    if (value._data.playerNum > value._data.playersUid.length) {
+      navigation.replace('Playerroom', {
+        id: value.id,
+        pNum: value._data.playerNum,
+        wNum: value._data.words[0].length,
+        wLen: value._data.words.length,
+      });
+    }
+  };
+
   return (
     <ScrollView>
       <Dialog
@@ -89,6 +107,39 @@ const SearchMatch = ({navigation}) => {
           shadowColor: 'rgba(255, 255, 255, 0)',
         }}>
         <Dialog.Loading />
+      </Dialog>
+      <Dialog
+        isVisible={showPwdDialog}
+        onBackdropPress={() => {
+          setShowPwdDialog(false);
+        }}
+        animationType="fade">
+        <Dialog.Title
+          titleStyle={{textAlign: 'center', color: 'black'}}
+          title="Inserisci la password della partita"
+        />
+        <Divider style={{marginVertical: '5%'}} />
+        <FormControl isInvalid={!validPwd}>
+          <Input
+            placeholder="Password"
+            value={inputPwd}
+            type="password"
+            size={'xl'}
+            onChangeText={txt => {
+              setInputPwd(txt);
+            }}
+          />
+          <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="md" />}>
+            Password errata
+          </FormControl.ErrorMessage>
+        </FormControl>
+        <Button
+          containerStyle={{marginTop: '10%'}}
+          title="ENTRA"
+          onPress={() => {
+            withPwd();
+          }}
+        />
       </Dialog>
       <Text h3 style={{width: '100%', textAlign: 'center', paddingTop: 10}}>
         Partite in attesa
@@ -100,7 +151,7 @@ const SearchMatch = ({navigation}) => {
           onChangeText={text => {
             setSearch(text);
           }}
-          size="xl"
+          size="lg"
           placeholder="Cerca host"
           w="100%"
           maxWidth="300px"
@@ -123,13 +174,19 @@ const SearchMatch = ({navigation}) => {
             <Card key={index} containerStyle={{padding: 0}}>
               <TouchableOpacity
                 onPress={() => {
-                  if (value._data.playerNum > value._data.playersUid.length) {
-                    navigation.replace('Playerroom', {
-                      id: value.id,
-                      pNum: value._data.playerNum,
-                      wNum: value._data.words[0].length,
-                      wLen: value._data.words.length,
-                    });
+                  // if (value._data.playerNum > value._data.playersUid.length) {
+                  //   navigation.replace('Playerroom', {
+                  //     id: value.id,
+                  //     pNum: value._data.playerNum,
+                  //     wNum: value._data.words[0].length,
+                  //     wLen: value._data.words.length,
+                  //   });
+                  // }
+                  if (value.data().password != '') {
+                    setMatchIndex(index);
+                    setShowPwdDialog(true);
+                  } else {
+                    enterRoom(value);
                   }
                 }}>
                 <View
@@ -153,9 +210,42 @@ const SearchMatch = ({navigation}) => {
                       Lunghezza parole: {value._data.words.length}
                     </Text>
                   </View>
-                  <Text h4 style={{marginRight: 20}}>
-                    {value._data.playersUid.length} / {value._data.playerNum}
-                  </Text>
+                  <View
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      width: '30%',
+                      justifyContent: 'flex-end',
+                    }}>
+                    {value.data().password != '' ? (
+                      <Icon
+                        size={30}
+                        name="lock-closed"
+                        type="ionicon"
+                        style={{marginRight: '15%'}}
+                      />
+                    ) : (
+                      <Icon
+                        size={30}
+                        name="lock-open"
+                        type="ionicon"
+                        style={{marginRight: '15%'}}
+                      />
+                    )}
+                    <View
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        marginRight: '10%',
+                      }}>
+                      <Text>giocatori</Text>
+                      <Text h4>
+                        {value._data.playersUid.length} /{' '}
+                        {value._data.playerNum}
+                      </Text>
+                    </View>
+                  </View>
                 </View>
               </TouchableOpacity>
             </Card>

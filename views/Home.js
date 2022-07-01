@@ -2,12 +2,12 @@ import {View, Text} from 'react-native';
 import React, {useState, useEffect, useContext, createContext} from 'react';
 
 import {Button, fonts} from '@rneui/base';
-import {Input, Text as TextE} from '@rneui/themed';
+import {Text as TextE} from '@rneui/themed';
 import {Overlay, Dialog} from '@rneui/themed';
 
 import {Dropdown} from 'react-native-element-dropdown';
 
-import {Select, Box} from 'native-base';
+import {Select, Box, Input} from 'native-base';
 import {CheckIcon} from 'native-base';
 
 import auth from '@react-native-firebase/auth';
@@ -107,12 +107,6 @@ const Home = ({navigation}) => {
       <Text style={{color: 'black', fontSize: 20, marginVertical: 20}}>
         Ciao {userData.username ? userData.username : ''}!
       </Text>
-      {/* <Button
-        title="Clicca"
-        onPress={() => {
-          console.log(navigation.getState());
-        }}
-      /> */}
 
       <View>
         <Button
@@ -128,6 +122,14 @@ const Home = ({navigation}) => {
           buttonStyle={{marginBottom: '5%'}}
           onPress={() => {
             navigation.navigate('Search');
+          }}
+        />
+
+        <Button
+          title="STATISTICHE"
+          buttonStyle={{marginBottom: '5%'}}
+          onPress={() => {
+            navigation.navigate('Statistics');
           }}
         />
 
@@ -178,6 +180,7 @@ const initVals = {
   pNum: 2,
   wNum: 3,
   wLen: 4,
+  pwd: '',
 };
 
 const SelectData = createContext();
@@ -226,6 +229,24 @@ const CreateMatchDialog = ({
           placeholder="..."
           k="wLen"
         />
+
+        <View style={{width: '80%', marginBottom: 15}}>
+          <Text style={{color: 'black', fontSize: 17, marginBottom: 5}}>
+            Password (opzionale)
+          </Text>
+          <Input
+            placeholder="Password per la partita"
+            w="100%"
+            size="xl"
+            type="password"
+            onChangeText={txt => {
+              setVals(cur => {
+                cur.pwd = txt;
+                return cur;
+              });
+            }}
+          />
+        </View>
       </SelectData.Provider>
 
       <View
