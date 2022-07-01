@@ -3,7 +3,7 @@ import React, {createContext, useState} from 'react';
 
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import {createStackNavigator} from '@react-navigation/stack';
+import {NativeBaseProvider} from 'native-base';
 
 import {Provider} from 'react-redux';
 import store from './state/store';
@@ -16,6 +16,7 @@ import PlayerRoom from './views/PlayerRoom';
 import SearchMatch from './views/SearchMatch';
 import PlayBoard from './views/PlayBoard';
 import Ending from './views/Ending';
+import Statistics from './views/Statistics';
 
 import Tmp from './views/Tmp';
 
@@ -39,62 +40,69 @@ const App = () => {
   // const DevicesContextValue = React.useMemo(() => ({ userData, setUserData}), [userData]);
 
   return (
-    <Provider store={store}>
-      {/* <UserContext.Provider value={red}> */}
-      <NavigationContainer>
-        <Stack.Navigator initialRouteName="Login">
-          <Stack.Screen
-            options={{headerShown: false}}
-            name="Login"
-            component={Login}
-          />
-          <Stack.Screen
-            options={{headerShown: false}}
-            name="Register"
-            component={App2}
-          />
-          <Stack.Screen
-            name="Homepage"
-            component={Home}
-            options={{
-              headerLeft: props => <></>,
-              gestureEnabled: false,
-            }}
-          />
-          <Stack.Screen
-            options={{headerShown: false}}
-            name="Search"
-            component={SearchMatch}
-          />
-          <Stack.Screen
-            options={{headerShown: false}}
-            name="Hostroom"
-            component={HostRoom}
-          />
-          <Stack.Screen
-            options={{headerShown: false}}
-            name="Playerroom"
-            component={PlayerRoom}
-          />
-          <Stack.Screen
-            options={{headerShown: false}}
-            name="Playboard"
-            component={PlayBoard}
-          />
-          <Stack.Screen
-            options={{headerShown: false}}
-            name="Tmp"
-            component={Tmp}
-          />
-          <Stack.Screen
-            options={{headerShown: false}}
-            name="Ending"
-            component={Ending}
-          />
-        </Stack.Navigator>
-      </NavigationContainer>
-      {/* </UserContext.Provider> */}
-    </Provider>
+    <NativeBaseProvider>
+      <Provider store={store}>
+        {/* <UserContext.Provider value={red}> */}
+        <NavigationContainer>
+          <Stack.Navigator initialRouteName="Login">
+            <Stack.Screen
+              options={{headerShown: false}}
+              name="Login"
+              component={Login}
+            />
+            <Stack.Screen
+              options={{headerShown: false}}
+              name="Register"
+              component={App2}
+            />
+            <Stack.Screen
+              name="Homepage"
+              component={Home}
+              options={{
+                headerLeft: props => <></>,
+                gestureEnabled: false,
+              }}
+            />
+            <Stack.Screen
+              options={{headerShown: false}}
+              name="Search"
+              component={SearchMatch}
+            />
+            <Stack.Screen
+              options={{headerShown: false}}
+              name="Statistics"
+              component={Statistics}
+            />
+            <Stack.Screen
+              options={{headerShown: false}}
+              name="Hostroom"
+              component={HostRoom}
+            />
+            <Stack.Screen
+              options={{headerShown: false}}
+              name="Playerroom"
+              component={PlayerRoom}
+            />
+            <Stack.Screen
+              options={{headerShown: false}}
+              name="Playboard"
+              component={PlayBoard}
+            />
+            <Stack.Screen
+              options={{headerShown: false}}
+              name="Tmp"
+              component={Tmp}
+            />
+            <Stack.Screen
+              options={{headerShown: false}}
+              name="Ending"
+              component={Ending}
+            />
+          </Stack.Navigator>
+        </NavigationContainer>
+        {/* </UserContext.Provider> */}
+      </Provider>
+    </NativeBaseProvider>
   );
 };
 

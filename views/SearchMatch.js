@@ -1,17 +1,20 @@
 import {View, ScrollView, StyleSheet, TouchableOpacity} from 'react-native';
 import React, {useState} from 'react';
 
-import {Button, color, fonts} from '@rneui/base';
-import {Input, Text, Card, Icon, Dialog} from '@rneui/themed';
-
 import {useFocusEffect} from '@react-navigation/native';
 
 import firestore from '@react-native-firebase/firestore';
 import {shallowEqual} from 'react-redux';
 
+import {Text, Card, Icon, Dialog} from '@rneui/themed';
+import {Button, color, fonts} from '@rneui/base';
+
+import {Input, Box} from 'native-base';
+
 const SearchMatch = ({navigation}) => {
   const [matchList, setMatchList] = useState([]);
-  const [matchIds, setMatchIds] = useState([]);
+  const [filteredMatchList, setFilteredMatchList] = useState([]);
+  const [search, setSearch] = useState('');
 
   const [loading, setLoading] = useState(true);
 
@@ -28,11 +31,7 @@ const SearchMatch = ({navigation}) => {
           qs => {
             //   console.log(qs.docs);
             setMatchList(qs.docs);
-            let tmp = [];
-            qs.docs.forEach((value, index) => {
-              tmp.push(value.id);
-            });
-            setMatchIds(tmp);
+            setFilteredMatchList(qs.docs);
             setLoading(false);
           },
           err => {
@@ -45,6 +44,40 @@ const SearchMatch = ({navigation}) => {
         subscribe();
       };
     }, []),
+  );
+
+  const filterResults = () => {
+    setFilteredMatchList([]);
+    if (search.length > 0) {
+      matchList.forEach((value, index) => {
+        if (value.data().hostName.includes(search)) {
+          setFilteredMatchList([...filteredMatchList, value]);
+        }
+      });
+    } else {
+      setFilteredMatchList(matchList);
+    }
+    console.log(filteredMatchList.length);
+  };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      setFilteredMatchList([]);
+      if (search.length > 0) {
+        const tmp = [];
+        matchList.forEach((value, index) => {
+          console.log(value.data().hostName);
+          if (
+            value.data().hostName.toLowerCase().includes(search.toLowerCase())
+          ) {
+            tmp.push(value);
+          }
+        });
+        setFilteredMatchList(tmp);
+      } else {
+        setFilteredMatchList(matchList);
+      }
+    }, [search]),
   );
 
   return (
@@ -61,15 +94,38 @@ const SearchMatch = ({navigation}) => {
         Partite in attesa
       </Text>
 
-      {matchList.length > 0 ? (
-        matchList.map((value, index) => {
+      <Box alignItems="center" marginTop="3%">
+        <Input
+          value={search}
+          onChangeText={text => {
+            setSearch(text);
+          }}
+          size="xl"
+          placeholder="Cerca host"
+          w="100%"
+          maxWidth="300px"
+          variant="rounded"
+          InputRightElement={
+            <Icon
+              name="close-circle-outline"
+              type="ionicon"
+              style={{marginRight: '3%'}}
+              iconStyle={{color: '#808080', borderRadius: 50}}
+              onPress={() => setSearch('')}
+            />
+          }
+        />
+      </Box>
+
+      {filteredMatchList.length > 0 ? (
+        filteredMatchList.map((value, index) => {
           return (
             <Card key={index} containerStyle={{padding: 0}}>
               <TouchableOpacity
                 onPress={() => {
                   if (value._data.playerNum > value._data.playersUid.length) {
                     navigation.replace('Playerroom', {
-                      id: matchIds[index],
+                      id: value.id,
                       pNum: value._data.playerNum,
                       wNum: value._data.words[0].length,
                       wLen: value._data.words.length,
