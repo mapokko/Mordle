@@ -19,8 +19,8 @@ import {
 } from '../state/matchSlice';
 
 import {TopInfo} from './HostRoom';
-
-const RoomContext = createContext();
+import PlayersTab from '../components/PlayersTab';
+export const RoomContext = createContext();
 
 const PlayerRoom = ({route, navigation}) => {
   const appState = useRef(AppState.currentState);
@@ -31,13 +31,14 @@ const PlayerRoom = ({route, navigation}) => {
 
   const [chat, setChat] = useState([]);
   const [waitPlayers, setWaitPlayers] = useState([]);
+  const [waitPlayersUid, setWaitPlayersUid] = useState([]);
 
   const [toggleExit, setToggleExit] = useState(false);
   const [toggleCanc, setToggleCanc] = useState(false);
 
-  const contextData = {route, chat, waitPlayers};
-
   const [loading, setLoading] = useState(true);
+
+  const contextData = {route, chat, waitPlayers, waitPlayersUid, setLoading};
 
   useFocusEffect(
     React.useCallback(() => {
@@ -100,6 +101,7 @@ const PlayerRoom = ({route, navigation}) => {
               } else {
                 setChat(data.chat);
                 setWaitPlayers(data.playersName);
+                setWaitPlayersUid(data.playersUid);
                 if (data.play == true && data.finish == false) {
                   firestore()
                     .collection('matches')
@@ -146,34 +148,31 @@ const PlayerRoom = ({route, navigation}) => {
             .doc(matchData.matchId)
             .get()
             .then(doc => {
-              const pos = doc._data.playersName.indexOf(
-                auth().currentUser.displayName,
-              );
+              let tmpIndex;
+              doc.data().playersUid.forEach((el, index) => {
+                console.log(el);
+                if (el == auth().currentUser.uid) {
+                  tmpIndex = index;
+                }
+              });
 
               firestore()
                 .collection('matches')
                 .doc(matchData.matchId)
                 .update({
-                  playersUid: doc._data.playersUid.filter(val => {
-                    if (val != auth().currentUser.uid) {
+                  playersUid: doc._data.playersUid.filter((val, index) => {
+                    if (index != tmpIndex) {
                       return true;
                     } else {
                       return false;
                     }
                   }),
+                  playersName: doc._data.playersName.filter(
+                    (val, index) => index != tmpIndex,
+                  ),
                 })
                 .then(() => {
-                  firestore()
-                    .collection('matches')
-                    .doc(matchData.matchId)
-                    .update({
-                      playersName: doc._data.playersName.filter(
-                        (val, index) => index != pos,
-                      ),
-                    })
-                    .then(() => {
-                      navigation.dispatch(e.data.action);
-                    });
+                  navigation.dispatch(e.data.action);
                 });
             });
         } else if (
@@ -301,7 +300,7 @@ export const TabComponent = () => {
           <ChatTab />
         </TabView.Item>
         <TabView.Item style={{width: '100%'}}>
-          <PlayersTab />
+          <PlayersTab RoomContext={RoomContext} />
         </TabView.Item>
       </TabView>
     </>
@@ -436,34 +435,6 @@ const ChatTab = () => {
         />
       </View>
     </View>
-  );
-};
-
-const PlayersTab = () => {
-  const con = useContext(RoomContext);
-  return (
-    <ScrollView>
-      {con.waitPlayers.length > 0 ? (
-        con.waitPlayers.map((item, index) => {
-          return (
-            <Text
-              key={index}
-              style={{
-                fontSize: 20,
-                paddingLeft: 10,
-                paddingVertical: 10,
-
-                borderBottomColor: 'grey',
-                borderBottomWidth: 1,
-              }}>
-              {item}
-            </Text>
-          );
-        })
-      ) : (
-        <></>
-      )}
-    </ScrollView>
   );
 };
 

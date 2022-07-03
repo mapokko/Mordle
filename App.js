@@ -1,7 +1,7 @@
 import {View, Text} from 'react-native';
-import React, {createContext, useState} from 'react';
+import React, {createContext, useState, useEffect, useRef} from 'react';
 
-import {NavigationContainer} from '@react-navigation/native';
+import {NavigationContainer, StackActions} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {NativeBaseProvider} from 'native-base';
 
@@ -18,7 +18,12 @@ import PlayBoard from './views/PlayBoard';
 import Ending from './views/Ending';
 import Statistics from './views/Statistics';
 
+import messaging from '@react-native-firebase/messaging';
+import {handleNotification} from './helper/notificationHandler';
+
 import Tmp from './views/Tmp';
+
+import notifee, {EventType, AndroidImportance} from '@notifee/react-native';
 
 export const UserContext = createContext();
 
@@ -39,11 +44,69 @@ const App = () => {
   const data = {userData, setUserData};
   // const DevicesContextValue = React.useMemo(() => ({ userData, setUserData}), [userData]);
 
+  const navigationRef = useRef();
+
+  // useEffect(() => {
+  //   return notifee.onForegroundEvent(({type, detail}) => {
+  //     switch (type) {
+  //       case EventType.DISMISSED:
+  //         console.log('User dismissed notification', detail.notification);
+  //         break;
+  //       case EventType.PRESS:
+  //         // navigationRef.current.dispatch(StackActions.popToTop())
+  //         navigationRef.current.navigate('Statistics');
+  //         break;
+  //     }
+  //   });
+  // }, []);
+
+  useEffect(() => {
+    // notifee.createChannel({
+    //   id: 'mordleHigh',
+    //   name: 'mordle channel high priority',
+    //   lights: true,
+    //   vibration: true,
+    //   badge: false,
+    //   importance: AndroidImportance.HIGH,
+    // });
+
+    // notifee.createChannel({
+    //   id: 'mordleDef',
+    //   name: 'mordle channel low priority',
+    //   lights: true,
+    //   vibration: true,
+    //   badge: false,
+    //   importance: AndroidImportance.DEFAULT,
+    // });
+    console.log('listening for messages');
+    // const unsubscribe = messaging().onMessage(async remoteMessage => {
+    //   console.log('message received!!');
+    // });
+
+    messaging().onNotificationOpenedApp(remoteMessage => {
+      handleNotification(remoteMessage);
+    });
+
+    messaging()
+      .getInitialNotification()
+      .then(remoteMessage => {
+        handleNotification(remoteMessage);
+      });
+  }, []);
+
+  const handleNotification = remoteMessage => {
+    if (remoteMessage) {
+      if (remoteMessage.data.type == 'friendRequests') {
+        navigationRef.current.navigate('Statistics');
+      }
+    }
+  };
+
   return (
     <NativeBaseProvider>
       <Provider store={store}>
         {/* <UserContext.Provider value={red}> */}
-        <NavigationContainer>
+        <NavigationContainer ref={navigationRef}>
           <Stack.Navigator initialRouteName="Login">
             <Stack.Screen
               options={{headerShown: false}}

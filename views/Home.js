@@ -7,15 +7,29 @@ import {Overlay, Dialog} from '@rneui/themed';
 
 import {Dropdown} from 'react-native-element-dropdown';
 
-import {Select, Box, Input} from 'native-base';
+import {Select, Box, Input, Badge} from 'native-base';
 import {CheckIcon} from 'native-base';
 
-import auth from '@react-native-firebase/auth';
-import {CommonActions} from '@react-navigation/native';
+import auth, {firebase} from '@react-native-firebase/auth';
+import messaging from '@react-native-firebase/messaging';
+import firestore from '@react-native-firebase/firestore';
 import {StackActions, useFocusEffect} from '@react-navigation/native';
 
+import {
+  onDisplayNotification,
+  handleNotification,
+} from '../helper/notificationHandler';
+
+import notifee, {EventType, AndroidImportance} from '@notifee/react-native';
+
 import {useSelector, useDispatch} from 'react-redux';
-import {setUsername, setMailState, setUid} from '../state/userSlice';
+import {
+  setUsername,
+  setMailState,
+  setUid,
+  clear,
+  setToken,
+} from '../state/userSlice';
 
 import {UserContext} from '../App';
 
@@ -60,6 +74,7 @@ const Home = ({navigation}) => {
 
   useFocusEffect(
     React.useCallback(() => {
+      auth().currentUser.reload();
       const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
       return () => {
         subscriber();
@@ -67,14 +82,63 @@ const Home = ({navigation}) => {
     }, []),
   );
 
-  const showUser = () => {
-    console.log(userData);
+  useFocusEffect(
+    React.useCallback(() => {
+      if (userData.uid != '') {
+        messaging()
+          .getToken()
+          .then(token => {
+            dispatch(setToken(token));
+            updateToken(token);
+            // console.log(token);
+          });
+
+        return messaging().onTokenRefresh(token => {
+          updateToken(token);
+        });
+      }
+    }, [userData.uid]),
+  );
+
+  const updateToken = token => {
+    firestore()
+      .collection('users')
+      .where('uid', '==', auth().currentUser.uid)
+      .get()
+      .then(qs => {
+        firestore()
+          .collection('users')
+          .doc(qs.docs[0].id)
+          .update({token: firestore.FieldValue.arrayUnion(token)})
+          .then(() => {
+            console.log('TOKEN ADDED');
+          })
+          .catch(err => {
+            console.log('ERROR IN TOKEN ADD:  ' + err);
+          });
+      })
+      .catch(err => {
+        console.log('ERROR IN USER FETCH:  ' + err);
+      });
   };
 
   const signOut = () => {
-    dispatch(setUsername(''));
-    dispatch(setMailState(''));
-    dispatch(setUid(''));
+    dispatch(clear());
+
+    messaging()
+      .getToken()
+      .then(token => {
+        firestore()
+          .collection('users')
+          .where('uid', '==', auth().currentUser.uid)
+          .get()
+          .then(qs => {
+            firestore()
+              .collection('users')
+              .doc(qs.docs[0].id)
+              .update({token: firestore.FieldValue.arrayRemove(token)});
+          });
+      });
 
     auth()
       .signOut()
@@ -122,6 +186,22 @@ const Home = ({navigation}) => {
           buttonStyle={{marginBottom: '5%'}}
           onPress={() => {
             navigation.navigate('Search');
+          }}
+        />
+
+        <Button
+          title="SFIDE"
+          buttonStyle={{marginBottom: '5%'}}
+          onPress={() => {
+            console.log('navigate to SFIDA');
+          }}
+        />
+
+        <Button
+          title="AMICI"
+          buttonStyle={{marginBottom: '5%'}}
+          onPress={() => {
+            console.log('navigate to AMICI');
           }}
         />
 

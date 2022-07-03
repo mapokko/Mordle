@@ -7,7 +7,7 @@ import auth from '@react-native-firebase/auth';
 import {Input, Text, Tab, TabView, Icon, Dialog} from '@rneui/themed';
 import {Button, fonts} from '@rneui/base';
 
-// import {TabView, SceneMap} from 'react-native-tab-view';
+import PlayersTab from '../components/PlayersTab';
 
 import {useFocusEffect} from '@react-navigation/native';
 
@@ -32,6 +32,7 @@ const HostRoom = ({route, navigation}) => {
 
   const [chat, setChat] = useState([]);
   const [waitPlayers, setWaitPlayers] = useState([]);
+  const [waitPlayersUid, setWaitPlayersUid] = useState([]);
 
   const [startBtn, setStartBtn] = useState(true);
 
@@ -44,6 +45,7 @@ const HostRoom = ({route, navigation}) => {
     waitPlayers,
     startBtn,
     navigation,
+    waitPlayersUid,
     setStartBtn,
     setLoading,
   };
@@ -107,6 +109,7 @@ const HostRoom = ({route, navigation}) => {
             if (data) {
               setChat(data.chat);
               setWaitPlayers(data.playersName);
+              setWaitPlayersUid(data.playersUid);
               if (data.playerNum == data.playersUid.length) {
                 setStartBtn(false);
               } else {
@@ -183,6 +186,12 @@ const HostRoom = ({route, navigation}) => {
   return (
     <>
       <View>
+        <Button
+          title={'ss'}
+          onPress={() => {
+            console.log(waitPlayersUid);
+          }}
+        />
         <Dialog
           animationType="fade"
           isVisible={loading}
@@ -266,7 +275,7 @@ export const TabComponent = () => {
           <ChatTab />
         </TabView.Item>
         <TabView.Item style={{width: '100%'}}>
-          <PlayersTab />
+          <PlayersTab RoomContext={RoomContext} />
         </TabView.Item>
       </TabView>
     </>
@@ -424,34 +433,6 @@ const ChatTab = () => {
         />
       </View>
     </View>
-  );
-};
-
-const PlayersTab = () => {
-  const con = useContext(RoomContext);
-  return (
-    <ScrollView>
-      {con.waitPlayers.length > 0 ? (
-        con.waitPlayers.map((item, index) => {
-          return (
-            <Text
-              key={index}
-              style={{
-                fontSize: 20,
-                paddingLeft: 10,
-                paddingVertical: 10,
-
-                borderBottomColor: 'grey',
-                borderBottomWidth: 1,
-              }}>
-              {item}
-            </Text>
-          );
-        })
-      ) : (
-        <></>
-      )}
-    </ScrollView>
   );
 };
 

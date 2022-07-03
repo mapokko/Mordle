@@ -70,9 +70,13 @@ const App2 = ({navigation}) => {
       await auth().createUserWithEmailAndPassword(mail, pwd);
       await auth().currentUser.updateProfile({displayName: user});
       await auth().currentUser.reload();
-      await firestore()
-        .collection('users')
-        .add({username: user, uid: auth().currentUser.uid});
+      await firestore().collection('users').add({
+        username: user,
+        uid: auth().currentUser.uid,
+        friends: [],
+        friendRequests: [],
+        requestSent: [],
+      });
       setToggleLoading(false);
       setUser('');
       setMail('');
