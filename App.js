@@ -18,6 +18,7 @@ import PlayBoard from './views/PlayBoard';
 import Ending from './views/Ending';
 import Statistics from './views/Statistics';
 import Friends from './views/Friends';
+import Challenge from './views/Challenge';
 
 import messaging from '@react-native-firebase/messaging';
 import {handleNotification} from './helper/notificationHandler';
@@ -127,6 +128,11 @@ const App = () => {
               options={{headerShown: false}}
               name="Friends"
               component={Friends}
+            />
+            <Stack.Screen
+              options={{headerShown: false}}
+              name="Challenge"
+              component={Challenge}
             />
             <Stack.Screen
               options={{headerShown: false}}

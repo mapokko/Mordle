@@ -193,7 +193,7 @@ const Home = ({navigation}) => {
           title="SFIDE"
           buttonStyle={{marginBottom: '5%'}}
           onPress={() => {
-            console.log('navigate to SFIDA');
+            navigation.navigate('Challenge');
           }}
         />
 

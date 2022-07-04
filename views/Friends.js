@@ -46,7 +46,7 @@ const Friends = ({route}) => {
         variant="primary">
         <Tab.Item title="Giocatori" titleStyle={{fontSize: 17}} />
         <Tab.Item title="Amici" titleStyle={{fontSize: 17}} />
-        <Tab.Item title="Richieste di amicizia" titleStyle={{fontSize: 17}} />
+        <Tab.Item title="Richieste" titleStyle={{fontSize: 17}} />
       </Tab>
       <LoadingContext.Provider value={con}>
         <TabView value={index} onChange={setIndex} animationType="spring">
