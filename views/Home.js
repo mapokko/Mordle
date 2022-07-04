@@ -209,7 +209,7 @@ const Home = ({navigation}) => {
           title="AMICI"
           buttonStyle={{marginBottom: '5%'}}
           onPress={() => {
-            navigation.navigate('Friends');
+            navigation.navigate('Friends', {tab: 0});
           }}
         />
 

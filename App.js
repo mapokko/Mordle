@@ -84,7 +84,7 @@ const App = () => {
   const handleNotification = remoteMessage => {
     if (remoteMessage) {
       if (remoteMessage.data.type == 'friendRequests') {
-        navigationRef.current.navigate('Statistics');
+        navigationRef.current.navigate('Friends', {tab: 2});
       }
     }
   };

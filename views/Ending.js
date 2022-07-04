@@ -135,9 +135,9 @@ const Ending = ({route, navigation}) => {
       </Dialog>
       {!toggleLoading && (
         <>
-          <Text h4>Indovinando {finalScore.scored} parole</Text>
+          <Text h3>Indovinando {finalScore.scored} parole</Text>
           <Text style={{marginTop: '2%'}} h2>
-            Sei arrivato: {pos}
+            Sei arrivato {pos}°
           </Text>
           {sameScore > 0 ? (
             <Text style={{color: '#222222', fontSize: 20, marginTop: '4%'}}>

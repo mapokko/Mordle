@@ -14,12 +14,12 @@ import Loading from '../components/Loading';
 
 const LoadingContext = createContext();
 
-const Friends = () => {
-  const [index, setIndex] = useState(0);
+const Friends = ({route}) => {
+  const [index, setIndex] = useState(route.params.tab);
   const [loading, setLoading] = useState(false);
   const [friends, setFriends] = useState([]);
   const [friendReqs, setFriendReqs] = useState([]);
-  const con = {setLoading, friends, friendReqs};
+  const con = {setLoading, friends, friendReqs, setIndex};
 
   useFocusEffect(
     React.useCallback(() => {
@@ -57,7 +57,7 @@ const Friends = () => {
             <FriendsTab />
           </TabView.Item>
           <TabView.Item style={{width: '100%'}}>
-            <Text>Richieste</Text>
+            <ReqsTab />
           </TabView.Item>
         </TabView>
       </LoadingContext.Provider>
@@ -181,6 +181,17 @@ const PlayerSearchTab = () => {
                     mt="2">
                     GIA' AMICO
                   </Button>
+                ) : con.friendReqs.includes(value.data().uid) ? (
+                  <Button
+                    w="1/2"
+                    size="lg"
+                    bgColor="#e6b800"
+                    mt="2"
+                    onPress={() => {
+                      con.setIndex(2);
+                    }}>
+                    RICHIESTA IN ATTESA
+                  </Button>
                 ) : (
                   <Button
                     w="1/2"
@@ -221,7 +232,6 @@ const FriendsTab = () => {
   useFocusEffect(
     React.useCallback(() => {
       setFriendsData([]);
-      let newData = [];
       for (let i = 0; i < con.friends.length; i++) {
         firestore()
           .collection('users')
@@ -233,7 +243,6 @@ const FriendsTab = () => {
             });
           });
       }
-      console.log(newData);
       //   setFriendsData(newData);
     }, [con.friends]),
   );
@@ -278,6 +287,179 @@ const FriendsTab = () => {
         );
       })}
     </ScrollView>
+  );
+};
+
+const ReqsTab = ({}) => {
+  const con = useContext(LoadingContext);
+  const [reqsData, setReqsData] = useState([]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      setReqsData([]);
+      for (let i = 0; i < con.friendReqs.length; i++) {
+        firestore()
+          .collection('users')
+          .where('uid', '==', con.friendReqs[i])
+          .get()
+          .then(qs => {
+            setReqsData(prev => {
+              return [...prev, qs.docs[0].data()];
+            });
+          });
+      }
+    }, [con.friendReqs]),
+  );
+
+  return (
+    <ScrollView>
+      {reqsData.map((value, index) => {
+        return (
+          <View
+            key={index}
+            style={{
+              paddingVertical: 10,
+              paddingHorizontal: '5%',
+              borderBottomWidth: 1,
+              borderBottomColor: '#b1b1b1',
+              display: 'flex',
+              justifyContent: 'space-between',
+            }}>
+            <UserRow value={value} />
+            <View
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                width: '100%',
+              }}>
+              <Button
+                ml="0.5"
+                w="1/2"
+                size="lg"
+                bgColor="#669036"
+                mt="2"
+                onPress={() => {
+                  con.setLoading(true);
+
+                  firestore()
+                    .collection('users')
+                    .where('uid', '==', auth().currentUser.uid)
+                    .get()
+                    .then(qs => {
+                      firestore()
+                        .collection('users')
+                        .doc(qs.docs[0].id)
+                        .update({
+                          friendRequests: firestore.FieldValue.arrayRemove(
+                            value.uid,
+                          ),
+                          friends: firestore.FieldValue.arrayUnion(value.uid),
+                        })
+                        .then(() => {
+                          con.setLoading(false);
+                        })
+                        .catch(err => {
+                          ToastAndroid.show(
+                            'Amicizia non possibile..',
+                            ToastAndroid.LONG,
+                          );
+                          console.log(err);
+                          con.setLoading(false);
+                        });
+                    })
+                    .catch(err => {
+                      ToastAndroid.show(
+                        'Utente corrente non trovato',
+                        ToastAndroid.LONG,
+                      );
+                      console.log(err);
+                      con.setLoading(false);
+                    });
+
+                  firestore()
+                    .collection('users')
+                    .where('uid', '==', value.uid)
+                    .get()
+                    .then(qs => {
+                      firestore()
+                        .collection('users')
+                        .doc(qs.docs[0].id)
+                        .update({
+                          friends: firestore.FieldValue.arrayUnion(
+                            auth().currentUser.uid,
+                          ),
+                        })
+                        .then(() => {})
+                        .catch(err => {
+                          ToastAndroid.show(
+                            'non aggiunto ad amico..',
+                            ToastAndroid.LONG,
+                          );
+                          console.log(err);
+                        });
+                    });
+                }}>
+                ACCETTA
+              </Button>
+              <Button
+                ml="0.5"
+                w="1/2"
+                size="lg"
+                bgColor="rgb(179, 0, 0)"
+                mt="2"
+                onPress={() => {
+                  con.setLoading(true);
+
+                  firestore()
+                    .collection('users')
+                    .where('uid', '==', auth().currentUser.uid)
+                    .get()
+                    .then(qs => {
+                      firestore()
+                        .collection('users')
+                        .doc(qs.docs[0].id)
+                        .update({
+                          friendRequests: firestore.FieldValue.arrayRemove(
+                            value.uid,
+                          ),
+                        })
+                        .then(() => {
+                          con.setLoading(false);
+                        })
+                        .catch(err => {
+                          ToastAndroid.show(
+                            'rimozione non possibile..',
+                            ToastAndroid.LONG,
+                          );
+                          console.log(err);
+                          con.setLoading(false);
+                        });
+                    })
+                    .catch(err => {
+                      ToastAndroid.show(
+                        'Utente corrente non trovato',
+                        ToastAndroid.LONG,
+                      );
+                      console.log(err);
+                      con.setLoading(false);
+                    });
+                }}>
+                RIFIUTA
+              </Button>
+            </View>
+          </View>
+        );
+      })}
+    </ScrollView>
+  );
+};
+
+const UserRow = ({value}) => {
+  return (
+    <View>
+      <Text h4>{value.username}</Text>
+      <Text style={{color: '#242424', fontSize: 13}}>{value.uid}</Text>
+    </View>
   );
 };
 
