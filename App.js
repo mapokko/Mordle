@@ -17,6 +17,7 @@ import SearchMatch from './views/SearchMatch';
 import PlayBoard from './views/PlayBoard';
 import Ending from './views/Ending';
 import Statistics from './views/Statistics';
+import Friends from './views/Friends';
 
 import messaging from '@react-native-firebase/messaging';
 import {handleNotification} from './helper/notificationHandler';
@@ -45,20 +46,6 @@ const App = () => {
   // const DevicesContextValue = React.useMemo(() => ({ userData, setUserData}), [userData]);
 
   const navigationRef = useRef();
-
-  // useEffect(() => {
-  //   return notifee.onForegroundEvent(({type, detail}) => {
-  //     switch (type) {
-  //       case EventType.DISMISSED:
-  //         console.log('User dismissed notification', detail.notification);
-  //         break;
-  //       case EventType.PRESS:
-  //         // navigationRef.current.dispatch(StackActions.popToTop())
-  //         navigationRef.current.navigate('Statistics');
-  //         break;
-  //     }
-  //   });
-  // }, []);
 
   useEffect(() => {
     // notifee.createChannel({
@@ -135,6 +122,11 @@ const App = () => {
               options={{headerShown: false}}
               name="Statistics"
               component={Statistics}
+            />
+            <Stack.Screen
+              options={{headerShown: false}}
+              name="Friends"
+              component={Friends}
             />
             <Stack.Screen
               options={{headerShown: false}}

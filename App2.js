@@ -72,10 +72,11 @@ const App2 = ({navigation}) => {
       await auth().currentUser.reload();
       await firestore().collection('users').add({
         username: user,
+        usernameLower: user.toLowerCase(),
+        mail: mail,
         uid: auth().currentUser.uid,
         friends: [],
         friendRequests: [],
-        requestSent: [],
       });
       setToggleLoading(false);
       setUser('');

@@ -76,9 +76,8 @@ const Home = ({navigation}) => {
     React.useCallback(() => {
       auth().currentUser.reload();
       const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
-      return () => {
-        subscriber();
-      }; // unsubscribe on unmount
+      return;
+      subscriber; // unsubscribe on unmount
     }, []),
   );
 
@@ -90,7 +89,7 @@ const Home = ({navigation}) => {
           .then(token => {
             dispatch(setToken(token));
             updateToken(token);
-            // console.log(token);
+            console.log(token);
           });
 
         return messaging().onTokenRefresh(token => {
@@ -136,15 +135,16 @@ const Home = ({navigation}) => {
             firestore()
               .collection('users')
               .doc(qs.docs[0].id)
-              .update({token: firestore.FieldValue.arrayRemove(token)});
+              .update({token: firestore.FieldValue.arrayRemove(token)})
+              .then(() => {
+                auth()
+                  .signOut()
+                  .then(() => {
+                    console.log('User signed out!');
+                    navigation.navigate('Login');
+                  });
+              });
           });
-      });
-
-    auth()
-      .signOut()
-      .then(() => {
-        console.log('User signed out!');
-        navigation.navigate('Login');
       });
   };
 
@@ -198,10 +198,18 @@ const Home = ({navigation}) => {
         />
 
         <Button
+          title="INFINITO"
+          buttonStyle={{marginBottom: '5%'}}
+          onPress={() => {
+            console.log('navigate to INFINITO');
+          }}
+        />
+
+        <Button
           title="AMICI"
           buttonStyle={{marginBottom: '5%'}}
           onPress={() => {
-            console.log('navigate to AMICI');
+            navigation.navigate('Friends');
           }}
         />
 
