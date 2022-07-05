@@ -117,7 +117,7 @@ const PlayerSearchTab = () => {
         }}
         variant="rounded"
         size="xl"
-        placeholder="Nome o Mail"
+        placeholder="Nome giocatore"
         m="3"
         InputRightElement={
           <Button
