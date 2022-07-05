@@ -4,10 +4,11 @@ import React, {useState, useEffect, useContext, createContext} from 'react';
 import {Button, fonts} from '@rneui/base';
 import {Text as TextE} from '@rneui/themed';
 import {Overlay, Dialog} from '@rneui/themed';
+import {Badge} from '@rneui/themed';
 
 import {Dropdown} from 'react-native-element-dropdown';
 
-import {Select, Box, Input, Badge} from 'native-base';
+import {Select, Box, Input} from 'native-base';
 import {CheckIcon} from 'native-base';
 
 import auth, {firebase} from '@react-native-firebase/auth';
@@ -40,6 +41,7 @@ const Home = ({navigation}) => {
 
   const [initializing, setInitializing] = useState(true);
   const [user, setUser] = useState();
+  const [reqsNum, setReqsNum] = useState(0);
   const con = useContext(UserContext);
 
   const [toggleLoading, setToggleLoading] = useState(false);
@@ -61,6 +63,21 @@ const Home = ({navigation}) => {
     }, []),
   );
 
+  useFocusEffect(
+    React.useCallback(() => {
+      firestore()
+        .collection('users')
+        .where('uid', '==', auth().currentUser.uid)
+        .get()
+        .then(qs => {
+          setReqsNum(qs.docs[0].data().friendRequests.length);
+        })
+        .catch(err => {
+          console.log('ERROR IN USER FETCH:  ' + err);
+        });
+    }, []),
+  );
+
   const onAuthStateChanged = u => {
     if (u) {
       dispatch(setUsername(u.displayName));
@@ -76,8 +93,7 @@ const Home = ({navigation}) => {
     React.useCallback(() => {
       auth().currentUser.reload();
       const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
-      return;
-      subscriber; // unsubscribe on unmount
+      return subscriber; // unsubscribe on unmount
     }, []),
   );
 
@@ -204,14 +220,24 @@ const Home = ({navigation}) => {
             console.log('navigate to INFINITO');
           }}
         />
-
-        <Button
-          title="AMICI"
-          buttonStyle={{marginBottom: '5%'}}
-          onPress={() => {
-            navigation.navigate('Friends', {tab: 0});
-          }}
-        />
+        <View>
+          <Button
+            title="AMICI"
+            buttonStyle={{marginBottom: '5%'}}
+            onPress={() => {
+              navigation.navigate('Friends', {tab: 0});
+            }}
+          />
+          {reqsNum > 0 ? (
+            <Badge
+              status="error"
+              value={reqsNum}
+              containerStyle={{position: 'absolute', top: -5, left: 125}}
+            />
+          ) : (
+            <></>
+          )}
+        </View>
 
         <Button
           title="STATISTICHE"

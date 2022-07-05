@@ -44,9 +44,21 @@ const Friends = ({route}) => {
           height: 3,
         }}
         variant="primary">
-        <Tab.Item title="Giocatori" titleStyle={{fontSize: 17}} />
-        <Tab.Item title="Amici" titleStyle={{fontSize: 17}} />
-        <Tab.Item title="Richieste" titleStyle={{fontSize: 17}} />
+        <Tab.Item
+          title="Giocatori"
+          titleStyle={{fontSize: 17}}
+          icon={{name: 'search', type: 'font-awesome', color: 'white'}}
+        />
+        <Tab.Item
+          title="Amici"
+          titleStyle={{fontSize: 17}}
+          icon={{name: 'users', type: 'font-awesome', color: 'white'}}
+        />
+        <Tab.Item
+          title="Richieste"
+          titleStyle={{fontSize: 17}}
+          icon={{name: 'plus-circle', type: 'font-awesome', color: 'white'}}
+        />
       </Tab>
       <LoadingContext.Provider value={con}>
         <TabView value={index} onChange={setIndex} animationType="spring">

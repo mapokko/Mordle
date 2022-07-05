@@ -1,4 +1,4 @@
-import {View, StyleSheet, ToastAndroid, AppState} from 'react-native';
+import {StyleSheet, ToastAndroid, AppState} from 'react-native';
 import React, {
   useState,
   useReducer,
@@ -15,6 +15,7 @@ import auth from '@react-native-firebase/auth';
 import CountDown from 'react-native-countdown-component';
 import {Input, Text, Tab, TabView, Icon, Dialog} from '@rneui/themed';
 import {Button} from '@rneui/base';
+import {View} from 'native-base';
 
 import {next, incScore} from '../state/matchSlice';
 
@@ -353,7 +354,7 @@ const PlayBoard = ({route, navigation}) => {
     setShowDialog(false);
   };
   return (
-    <View>
+    <View h="full">
       <PlayContext.Provider value={contextData}>
         <Dialog
           animationType="fade"
@@ -413,6 +414,7 @@ const PlayBoard = ({route, navigation}) => {
 
         <Countdown show={show} time={180} />
         <View
+          // h="full"
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -437,7 +439,8 @@ const Countdown = ({show, time}) => {
           id="dio"
           until={time}
           size={30}
-          digitStyle={{backgroundColor: '#f2f2f2', height: 40}}
+          style={{height: '9%'}}
+          digitStyle={{backgroundColor: '#f2f2f2'}}
           timeToShow={['M', 'S']}
           timeLabels={{m: '', s: ''}}
           showSeparator
@@ -469,7 +472,7 @@ const InputBoard = () => {
     <View
       style={{
         backgroundColor: '#444444',
-        margin: 10,
+        // margin: 10,
         borderRadius: 10,
         paddingVertical: 5,
         width: '80%',
@@ -632,7 +635,7 @@ const Keyboard = () => {
   return (
     <View
       style={{
-        width: '100%',
+        width: '95%',
       }}>
       <View
         style={{
