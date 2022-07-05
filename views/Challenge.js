@@ -162,12 +162,6 @@ const Challenge = () => {
 
   return (
     <>
-      <Button
-        onPress={() => {
-          console.log(sentChall);
-        }}>
-        ss
-      </Button>
       <Dialog
         isVisible={showAdd}
         animationType="fade"
@@ -187,7 +181,7 @@ const Challenge = () => {
             size="lg"
             value={addState.word}
             onChangeText={txt => {
-              dispatchLocal({type: 'setWord', payload: txt});
+              dispatchLocal({type: 'setWord', payload: txt.toLowerCase()});
             }}
           />
           <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>
@@ -471,7 +465,7 @@ const CreateChallengeTab = () => {
         {(filterFriends.length > 0 ? filterFriends : friendsData).map(
           (value, index) => {
             return (
-              <Card key={index}>
+              <Card key={index} containerStyle={{borderRadius: 10}}>
                 <View style={{marginBottom: '3%'}}>
                   <Text h4>{value.data().username}</Text>
                   <Text>id: {value.data().uid}</Text>
@@ -486,7 +480,7 @@ const CreateChallengeTab = () => {
                     isDisabled={true}
                     _text={{fontSize: 15}}
                     bgColor="#000000">
-                    SFIDA GIA" LANCIATA
+                    SFIDA GIA' LANCIATA
                   </Button>
                 ) : (
                   <Button
