@@ -1,4 +1,10 @@
-import {View, ScrollView, StyleSheet, TouchableOpacity} from 'react-native';
+import {
+  View,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  Keyboard,
+} from 'react-native';
 import React, {useState} from 'react';
 
 import {useFocusEffect} from '@react-navigation/native';
@@ -99,7 +105,7 @@ const SearchMatch = ({navigation}) => {
   };
 
   return (
-    <ScrollView>
+    <ScrollView keyboardShouldPersistTaps="always">
       <Dialog
         isVisible={loading}
         overlayStyle={{
@@ -137,6 +143,7 @@ const SearchMatch = ({navigation}) => {
           containerStyle={{marginTop: '10%'}}
           title="ENTRA"
           onPress={() => {
+            Keyboard.dismiss();
             withPwd();
           }}
         />

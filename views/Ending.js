@@ -1,7 +1,7 @@
 import {View, AppState} from 'react-native';
 import React, {useState, useRef} from 'react';
 
-import {useFocusEffect} from '@react-navigation/native';
+import {StackActions, useFocusEffect} from '@react-navigation/native';
 import {useSelector, useDispatch} from 'react-redux';
 
 import firestore, {firebase} from '@react-native-firebase/firestore';
@@ -31,21 +31,23 @@ const Ending = ({route, navigation}) => {
         .onSnapshot(doc => {
           const data = doc.data();
           if (data) {
-            let count = 0;
-            for (let i = 0; i < data.playersUid.length; i++) {
-              if (
-                data.scores[data.playersUid[i]].status == 'abandon' ||
-                data.scores[data.playersUid[i]].status == 'finish'
-              ) {
-                count++;
-              }
+            if (Object.keys(data.scores).length == data.playersUid.length) {
+              let count = 0;
+              for (let i = 0; i < data.playersUid.length; i++) {
+                if (
+                  data.scores[data.playersUid[i]].status == 'abandon' ||
+                  data.scores[data.playersUid[i]].status == 'finish'
+                ) {
+                  count++;
+                }
 
-              if (count == data.playersUid.length) {
-                setScores(data.scores);
-                setFinalScore(() => {
-                  return data.scores[auth().currentUser.uid];
-                });
-                // prepResult(data.scores);
+                if (count == data.playersUid.length) {
+                  setScores(data.scores);
+                  setFinalScore(() => {
+                    return data.scores[auth().currentUser.uid];
+                  });
+                  // prepResult(data.scores);
+                }
               }
             }
           }
@@ -160,18 +162,17 @@ const Ending = ({route, navigation}) => {
           </Text>
           {worse > 0 ? (
             <>
-              <Text
-                style={{color: '#222222', fontSize: 20, marginBottom: '2%'}}>
-                Hai battuto {worse} giocator{worse > 1 ? 'i' : 'e'}!
-              </Text>
               <Text style={{color: '#222222', fontSize: 20}}>
-                Hai indovinato {finalScore.scored} parole in {finalScore.time}{' '}
-                secondi!
+                Hai battuto {worse} giocator{worse > 1 ? 'i' : 'e'}!
               </Text>
             </>
           ) : (
             <></>
           )}
+          <Text style={{color: '#222222', fontSize: 20, marginTop: '2%'}}>
+            Hai indovinato {finalScore?.scored} parole in {finalScore.time}{' '}
+            secondi!
+          </Text>
           <Button
             title="TORNA ALLA HOMEPAGE"
             buttonStyle={{

@@ -49,19 +49,19 @@ const PlayerRoom = ({route, navigation}) => {
         .get()
         .then(doc => {
           dispatch(setId(doc.id));
-          dispatch(setWords(doc._data.words));
-          dispatch(setHost(doc._data.hostName));
-          dispatch(setHostUid(doc._data.hostUid));
+          dispatch(setWords(doc.data().words));
+          dispatch(setHost(doc.data().hostName));
+          dispatch(setHostUid(doc.data().hostUid));
 
           firestore()
             .collection('matches')
             .doc(doc.id)
             .update({
               playersName: [
-                ...doc._data.playersName,
+                ...doc.data().playersName,
                 auth().currentUser.displayName,
               ],
-              playersUid: [...doc._data.playersUid, auth().currentUser.uid],
+              playersUid: [...doc.data().playersUid, auth().currentUser.uid],
             });
 
           firestore()
@@ -69,7 +69,7 @@ const PlayerRoom = ({route, navigation}) => {
             .doc(doc.id)
             .update({
               chat: [
-                ...doc._data.chat,
+                ...doc.data().chat,
                 {
                   author: 'Mordle',
                   message: `${
@@ -161,7 +161,7 @@ const PlayerRoom = ({route, navigation}) => {
                 .collection('matches')
                 .doc(matchData.matchId)
                 .update({
-                  playersUid: doc._data.playersUid.filter((val, index) => {
+                  playersUid: doc.data().playersUid.filter((val, index) => {
                     if (index != tmpIndex) {
                       return true;
                     } else {
