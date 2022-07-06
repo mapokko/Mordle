@@ -1,4 +1,10 @@
-import {StyleSheet, ToastAndroid, AppState} from 'react-native';
+import {
+  View,
+  StyleSheet,
+  ToastAndroid,
+  AppState,
+  ImageBackground,
+} from 'react-native';
 import React, {
   useState,
   useReducer,
@@ -15,9 +21,15 @@ import auth from '@react-native-firebase/auth';
 import CountDown from 'react-native-countdown-component';
 import {Input, Text, Tab, TabView, Icon, Dialog} from '@rneui/themed';
 import {Button} from '@rneui/base';
-import {View} from 'native-base';
+// import {View} from 'native-base';
 
 import {next, incScore, incTime} from '../state/matchSlice';
+
+import back1 from '../helper/playBack1.png';
+import back2 from '../helper/playBack2.png';
+import back3 from '../helper/playBack3.png';
+import back4 from '../helper/playBack4.png';
+import back5 from '../helper/playBack5.png';
 
 const initState = {
   first: '',
@@ -160,6 +172,7 @@ const getUppercaseLetters = () => {
 
 const PlayBoard = ({route, navigation}) => {
   const appState = useRef(AppState.currentState);
+  const [background, setBackground] = useState();
 
   const matchData = useSelector(state => state.match);
   const dispatch = useDispatch();
@@ -218,7 +231,23 @@ const PlayBoard = ({route, navigation}) => {
   useFocusEffect(
     React.useCallback(() => {
       dispatchLocal({type: 'init', payload: word});
-      console.log(word);
+      switch (Math.floor(Math.random() * 5)) {
+        case 0:
+          setBackground(back1);
+          break;
+        case 1:
+          setBackground(back2);
+          break;
+        case 2:
+          setBackground(back3);
+          break;
+        case 3:
+          setBackground(back4);
+          break;
+        case 4:
+          setBackground(back5);
+          break;
+      }
     }, []),
   );
 
@@ -356,77 +385,81 @@ const PlayBoard = ({route, navigation}) => {
     setShowDialog(false);
   };
   return (
-    <View h="full">
-      <PlayContext.Provider value={contextData}>
-        <Dialog
-          animationType="fade"
-          isVisible={showDialog}
-          overlayStyle={{
-            backgroundColor: dialogColor,
-            width: '90%',
-          }}>
-          <View style={{display: 'flex', alignItems: 'center'}}>
-            <Text
-              h1
-              h1Style={{color: 'white', marginTop: 20, textAlign: 'center'}}>
-              {dialogMsg}
-            </Text>
-            <Text style={{color: 'white', fontSize: 25, marginTop: 30}}>
-              La parola era: {word}!
-            </Text>
+    <ImageBackground source={background} resizeMode="cover">
+      <View style={{height: '100%'}}>
+        <PlayContext.Provider value={contextData}>
+          <Dialog
+            animationType="fade"
+            isVisible={showDialog}
+            overlayStyle={{
+              backgroundColor: dialogColor,
+              width: '90%',
+            }}>
+            <View style={{display: 'flex', alignItems: 'center'}}>
+              <Text
+                h1
+                h1Style={{color: 'white', marginTop: 20, textAlign: 'center'}}>
+                {dialogMsg}
+              </Text>
+              <Text style={{color: 'white', fontSize: 25, marginTop: 30}}>
+                La parola era: {word}!
+              </Text>
 
-            <Button
-              title={!gameEnd ? 'PROSSIMA PAROLA' : 'FINISCI PARTITA'}
-              color="warning"
-              containerStyle={{fontSize: 50, color: 'black', marginTop: 40}}
-              onPress={() => {
-                nextWord();
-              }}
-            />
+              <Button
+                title={!gameEnd ? 'PROSSIMA PAROLA' : 'FINISCI PARTITA'}
+                color="warning"
+                containerStyle={{fontSize: 50, color: 'black', marginTop: 40}}
+                onPress={() => {
+                  nextWord();
+                }}
+              />
+            </View>
+          </Dialog>
+
+          <Dialog
+            animationType="fade"
+            isVisible={toggleExit}
+            onBackdropPress={() => {
+              setToggleExit(false);
+            }}>
+            <Text style={{color: 'black', fontSize: 16}}>
+              Vuoi abbandonare la partita?
+            </Text>
+            <Dialog.Actions>
+              <Button
+                type="clear"
+                title="ESCI"
+                onPress={() => {
+                  setToggleExit(false);
+                  navigation.navigate('Homepage');
+                }}
+              />
+              <Button
+                type="clear"
+                title="ANNULLA"
+                onPress={() => {
+                  setToggleExit(false);
+                }}
+              />
+            </Dialog.Actions>
+          </Dialog>
+
+          <View
+            style={{
+              height: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}>
+            <View>
+              <Countdown show={show} time={180} />
+              <InputBoard />
+            </View>
+            <Keyboard />
           </View>
-        </Dialog>
-
-        <Dialog
-          animationType="fade"
-          isVisible={toggleExit}
-          onBackdropPress={() => {
-            setToggleExit(false);
-          }}>
-          <Text style={{color: 'black', fontSize: 16}}>
-            Vuoi abbandonare la partita?
-          </Text>
-          <Dialog.Actions>
-            <Button
-              type="clear"
-              title="ESCI"
-              onPress={() => {
-                setToggleExit(false);
-                navigation.navigate('Homepage');
-              }}
-            />
-            <Button
-              type="clear"
-              title="ANNULLA"
-              onPress={() => {
-                setToggleExit(false);
-              }}
-            />
-          </Dialog.Actions>
-        </Dialog>
-
-        <Countdown show={show} time={180} />
-        <View
-          // h="full"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}>
-          <InputBoard size={5} />
-          <Keyboard />
-        </View>
-      </PlayContext.Provider>
-    </View>
+        </PlayContext.Provider>
+      </View>
+    </ImageBackground>
   );
 };
 
@@ -441,8 +474,16 @@ const Countdown = ({show, time}) => {
           id="dio"
           until={time}
           size={30}
-          style={{height: '9%'}}
-          digitStyle={{backgroundColor: '#f2f2f2'}}
+          style={{
+            height: '10%',
+            marginVertical: '1.5%',
+          }}
+          digitStyle={{
+            backgroundColor: 'white',
+            borderRadius: 100,
+            height: '100%',
+          }}
+          separatorStyle={{color: 'rgba(255, 255, 255, 0)'}}
           timeToShow={['M', 'S']}
           timeLabels={{m: '', s: ''}}
           showSeparator
@@ -476,11 +517,11 @@ const InputBoard = () => {
   return (
     <View
       style={{
-        backgroundColor: '#444444',
-        // margin: 10,
+        backgroundColor: 'rgba(0, 0, 0, 0.4)',
+        marginHorizontal: '5%',
         borderRadius: 10,
-        paddingVertical: 5,
-        width: '80%',
+        paddingVertical: '1%',
+        // width: '100%',
       }}>
       <SingleRow tryPos={0} />
       <SingleRow tryPos={1} />
@@ -537,8 +578,9 @@ const SingleRow = ({tryPos}) => {
   return (
     <View
       style={{
-        marginVertical: 7,
-        width: '100%',
+        marginVertical: '2%',
+        // width: '95%',
+        marginHorizontal: '2%',
         display: 'flex',
         flexDirection: 'row',
         justifyContent: 'space-evenly',
@@ -584,9 +626,9 @@ const LetterInput = ({lett, trigger, color}) => {
   return (
     <Text
       style={{
-        height: 45,
-        width: 40,
-        marginHorizontal: 5,
+        height: '100%',
+        width: '14%',
+        marginHorizontal: '2%',
         backgroundColor: trigger ? getColor(color) : 'white',
         borderRadius: 10,
         textAlign: 'center',
@@ -647,7 +689,6 @@ const Keyboard = () => {
           display: 'flex',
           flexDirection: 'row',
           justifyContent: 'space-around',
-          marginTop: 5,
         }}>
         <Button
           raised={true}
@@ -671,7 +712,7 @@ const Keyboard = () => {
           }}
         />
       </View>
-      <View style={{marginTop: 10}}>
+      <View style={{marginVertical: '4%'}}>
         {alphArr.map((val, index) => {
           return (
             <View

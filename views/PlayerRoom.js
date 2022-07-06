@@ -288,9 +288,21 @@ export const TabComponent = () => {
           height: 3,
         }}
         variant="primary">
-        <Tab.Item title="Partita" titleStyle={{fontSize: 17}} />
-        <Tab.Item title="Chat" titleStyle={{fontSize: 17}} />
-        <Tab.Item title="Giocatori" titleStyle={{fontSize: 17}} />
+        <Tab.Item
+          title="Partita"
+          titleStyle={{fontSize: 17}}
+          containerStyle={{backgroundColor: '#669035'}}
+        />
+        <Tab.Item
+          title="Chat"
+          titleStyle={{fontSize: 17}}
+          containerStyle={{backgroundColor: '#669035'}}
+        />
+        <Tab.Item
+          title="Giocatori"
+          titleStyle={{fontSize: 17}}
+          containerStyle={{backgroundColor: '#669035'}}
+        />
       </Tab>
 
       <TabView value={index} onChange={setIndex} animationType="spring">

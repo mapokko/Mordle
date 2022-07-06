@@ -223,10 +223,10 @@ const Home = ({navigation}) => {
           </Dialog>
 
           <Image
-            source={require('../helper/title2.png')}
+            source={require('../helper/title2C.png')}
             style={{
-              height: '11%',
-              width: '70%',
+              // height: '11%',
+              width: '85%',
             }}
           />
           <TextE
