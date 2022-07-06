@@ -242,14 +242,6 @@ const Home = ({navigation}) => {
             <></>
           )}
         </View>
-
-        <Button
-          title="INFINITO"
-          buttonStyle={{marginBottom: '5%'}}
-          onPress={() => {
-            console.log('navigate to INFINITO');
-          }}
-        />
         <View>
           <Button
             title="AMICI"
@@ -270,7 +262,7 @@ const Home = ({navigation}) => {
         </View>
 
         <Button
-          title="STATISTICHE"
+          title="PROFILO"
           buttonStyle={{marginBottom: '5%'}}
           onPress={() => {
             navigation.navigate('Statistics');
