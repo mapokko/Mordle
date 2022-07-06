@@ -10,6 +10,7 @@ export const matchSlice = createSlice({
     hostUid: '',
     playerName: [],
     scored: 0,
+    time: 0,
   },
   reducers: {
     setId: (state, action) => {
@@ -33,6 +34,9 @@ export const matchSlice = createSlice({
     incScore: state => {
       state.scored = state.scored + 1;
     },
+    incTime: state => {
+      state.time = state.time + 1;
+    },
     clear: state => {
       state.matchId = '';
       state.words = [];
@@ -41,6 +45,7 @@ export const matchSlice = createSlice({
       state.hostUid = '';
       state.playerName = [];
       state.scored = 0;
+      state.time = 0;
     },
   },
 });
@@ -54,6 +59,7 @@ export const {
   next,
   clear,
   incScore,
+  incTime,
 } = matchSlice.actions;
 
 export default matchSlice.reducer;

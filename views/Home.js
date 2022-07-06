@@ -85,6 +85,7 @@ const Home = ({navigation}) => {
           firestore()
             .collection('challenges')
             .where('to', '==', qs.docs[0].id)
+            .where('result', '==', 'none')
             .get()
             .then(qs => {
               setChallengeNum(qs.docs.length);

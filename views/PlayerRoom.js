@@ -112,6 +112,7 @@ const PlayerRoom = ({route, navigation}) => {
                         [auth().currentUser.uid]: {
                           scored: 0,
                           status: 'playing',
+                          time: 0,
                         },
                       },
                     })

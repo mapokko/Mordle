@@ -32,13 +32,13 @@ const Tmp = ({navigation}) => {
       dispatch(clear());
       firestore()
         .collection('matches')
-        .doc('8x7356LOm4BKyPXYSbft')
+        .doc('s5VE7dmW9mhzt3lkXO0x')
         .get()
         .then(doc => {
           dispatch(setId(doc.id));
-          dispatch(setWords(doc._data.words));
-          dispatch(setHost(doc._data.hostName));
-          dispatch(setHostUid(doc._data.hostUid));
+          dispatch(setWords(doc.data().words));
+          dispatch(setHost(doc.data().hostName));
+          dispatch(setHostUid(doc.data().hostUid));
         });
     }, []),
   );

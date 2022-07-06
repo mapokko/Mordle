@@ -103,6 +103,7 @@ const Challenge = ({route, navigation}) => {
       }
       setReceivedChall([]);
       setSentChall([]);
+      setLoading(true);
 
       const unsub1 = firestore()
         .collection('challenges')
@@ -112,7 +113,7 @@ const Challenge = ({route, navigation}) => {
             let promises = [];
             let tmp = [];
             setReceivedChall([]);
-            for (let i = 0; i < qs.docs.length; i++) {
+            for (let i = qs.docs.length - 1; i >= 0; i--) {
               const prom = firestore()
                 .collection('users')
                 .doc(qs.docs[i].data().from)
@@ -127,6 +128,7 @@ const Challenge = ({route, navigation}) => {
             }
             Promise.all(promises).then(values => {
               setReceivedChall(tmp);
+              setLoading(false);
             });
           },
           err => {
@@ -144,7 +146,7 @@ const Challenge = ({route, navigation}) => {
             setSentChall([]);
             const promises = [];
             const tmp = [];
-            for (let i = 0; i < qs.docs.length; i++) {
+            for (let i = qs.docs.length - 1; i >= 0; i--) {
               const prom = firestore()
                 .collection('users')
                 .doc(qs.docs[i].data().to)

@@ -89,6 +89,8 @@ const App = () => {
         navigationRef.current.navigate('Friends', {tab: 2});
       } else if (remoteMessage.data.type == 'newChallenge') {
         navigationRef.current.navigate('Challenge', {tab: 1});
+      } else if (remoteMessage.data.type == 'endChallenge') {
+        navigationRef.current.navigate('Challenge', {tab: 2});
       }
     }
   };

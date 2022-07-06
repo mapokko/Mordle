@@ -340,7 +340,7 @@ const ReqsTab = ({}) => {
       setReqsData([]);
       const tmp = [];
       const promises = [];
-      for (let i = 0; i < con.friendReqs.length; i++) {
+      for (let i = con.friendReqs.length - 1; i >= 0; i--) {
         const prom = firestore()
           .collection('users')
           .where('uid', '==', con.friendReqs[i])

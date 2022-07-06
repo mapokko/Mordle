@@ -17,7 +17,7 @@ import {Input, Text, Tab, TabView, Icon, Dialog} from '@rneui/themed';
 import {Button} from '@rneui/base';
 import {View} from 'native-base';
 
-import {next, incScore} from '../state/matchSlice';
+import {next, incScore, incTime} from '../state/matchSlice';
 
 const initState = {
   first: '',
@@ -256,6 +256,7 @@ const PlayBoard = ({route, navigation}) => {
                     [auth().currentUser.uid]: {
                       scored: matchData.scored,
                       status: 'abandon',
+                      time: matchData.time,
                     },
                   },
                 })
@@ -340,6 +341,7 @@ const PlayBoard = ({route, navigation}) => {
               [auth().currentUser.uid]: {
                 scored: matchData.scored,
                 status: status,
+                time: matchData.time,
               },
             },
           });
@@ -458,6 +460,9 @@ const Countdown = ({show, time}) => {
             if (matchData.position == matchData.words.length) {
               con.setGameEnd(true);
             }
+          }}
+          onChange={until => {
+            con.dispatch(incTime());
           }}
         />
       ) : (

@@ -327,7 +327,11 @@ const MatchTab = () => {
               .doc(matchData.matchId)
               .update({
                 scores: {
-                  [auth().currentUser.uid]: {scored: 0, status: 'playing'},
+                  [auth().currentUser.uid]: {
+                    scored: 0,
+                    status: 'playing',
+                    time: 0,
+                  },
                 },
               })
               .then(() => {
