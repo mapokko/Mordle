@@ -190,12 +190,6 @@ const Challenge = ({route, navigation}) => {
 
   return (
     <>
-      <Button
-        onPress={() => {
-          console.log(receivedChall);
-        }}>
-        ss
-      </Button>
       <Dialog
         isVisible={showAdd}
         animationType="fade"

@@ -1,4 +1,4 @@
-import {View, Text} from 'react-native';
+import {View, Text, ImageBackground, StyleSheet, Image} from 'react-native';
 import React, {useState, useEffect, useContext, createContext} from 'react';
 
 import {Button, fonts} from '@rneui/base';
@@ -31,6 +31,8 @@ import {
   clear,
   setToken,
 } from '../state/userSlice';
+
+import pp from '../helper/tile4.png';
 
 import {UserContext} from '../App';
 
@@ -189,103 +191,224 @@ const Home = ({navigation}) => {
   };
 
   return (
-    <View
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        width: '100%',
-        height: '100%',
-      }}>
-      <Dialog
-        isVisible={toggleLoading}
-        overlayStyle={{
-          backgroundColor: 'none',
-          shadowColor: 'rgba(255, 255, 255, 0)',
+    <ImageBackground
+      source={pp}
+      resizeMode="cover"
+      // imageStyle={{height: 800, width: 800}}
+    >
+      <View
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          width: '100%',
+          height: '100%',
         }}>
-        <Dialog.Loading />
-      </Dialog>
-      <Text style={{color: 'black', fontSize: 20, marginVertical: 20}}>
-        Ciao {userData.username ? userData.username : ''}!
-      </Text>
+        <View
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            backgroundColor: 'rgba(255, 255, 255, 0.8)',
+            height: '95%',
+            width: '70%',
+            marginTop: '5%',
+            borderRadius: 10,
+          }}>
+          <Dialog
+            isVisible={toggleLoading}
+            overlayStyle={{
+              backgroundColor: 'none',
+              shadowColor: 'rgba(255, 255, 255, 0)',
+            }}>
+            <Dialog.Loading />
+          </Dialog>
 
-      <View>
-        <Button
-          title="CREA PARTITA"
-          buttonStyle={{marginBottom: '5%'}}
-          onPress={() => {
-            toggleOverlay();
-          }}
-        />
-
-        <Button
-          title="CERCA PARTITA"
-          buttonStyle={{marginBottom: '5%'}}
-          onPress={() => {
-            navigation.navigate('Search');
-          }}
-        />
-        <View>
-          <Button
-            title="SFIDE"
-            buttonStyle={{marginBottom: '5%'}}
-            onPress={() => {
-              navigation.navigate('Challenge', {tab: 0});
+          <Image
+            source={require('../helper/title2.png')}
+            style={{
+              height: '11%',
+              width: '70%',
             }}
           />
-          {challengeNum > 0 ? (
-            <Badge
-              status="error"
-              value={challengeNum}
-              containerStyle={{position: 'absolute', top: -5, left: 125}}
+          <TextE
+            h4
+            h4Style={{
+              color: 'black',
+              fontSize: 22,
+              marginBottom: '1%',
+              width: '80%',
+              textAlign: 'center',
+            }}>
+            Ciao {userData.username ? userData.username : ''}!
+          </TextE>
+
+          <View
+            style={{
+              height: '65%',
+              display: 'flex',
+              justifyContent: 'space-between',
+              marginTop: '10%',
+            }}>
+            <Button
+              title="CREA PARTITA"
+              buttonStyle={[styles.buttonStyle, {backgroundColor: '#669036'}]}
+              titleStyle={styles.titleStyle}
+              containerStyle={styles.buttonContainerStyle}
+              icon={{
+                name: 'plus-circle',
+                type: 'material-community',
+                size: 30,
+                color: 'white',
+              }}
+              onPress={() => {
+                toggleOverlay();
+              }}
             />
-          ) : (
-            <></>
-          )}
-        </View>
-        <View>
-          <Button
-            title="AMICI"
-            buttonStyle={{marginBottom: '5%'}}
-            onPress={() => {
-              navigation.navigate('Friends', {tab: 0});
-            }}
+
+            <Button
+              title="CERCA PARTITA"
+              buttonStyle={[styles.buttonStyle, {backgroundColor: '#a655a3'}]}
+              titleStyle={styles.titleStyle}
+              containerStyle={styles.buttonContainerStyle}
+              icon={{
+                name: 'magnify',
+                type: 'material-community',
+                size: 30,
+                color: 'white',
+              }}
+              onPress={() => {
+                navigation.navigate('Search');
+              }}
+            />
+            <View>
+              <Button
+                title="SFIDE"
+                buttonStyle={[styles.buttonStyle, {backgroundColor: '#ff7043'}]}
+                titleStyle={styles.titleStyle}
+                containerStyle={styles.buttonContainerStyle}
+                icon={{
+                  name: 'sword-cross',
+                  type: 'material-community',
+                  size: 30,
+                  color: 'white',
+                }}
+                onPress={() => {
+                  navigation.navigate('Challenge', {tab: 0});
+                }}
+              />
+              {challengeNum > 0 ? (
+                <Badge
+                  status="error"
+                  value={challengeNum}
+                  containerStyle={{position: 'absolute', top: -5, left: 195}}
+                />
+              ) : (
+                <></>
+              )}
+            </View>
+            <View>
+              <Button
+                title="AMICI"
+                buttonStyle={styles.buttonStyle}
+                titleStyle={styles.titleStyle}
+                containerStyle={styles.buttonContainerStyle}
+                icon={{
+                  name: 'account-group',
+                  type: 'material-community',
+                  size: 30,
+                  color: 'white',
+                }}
+                onPress={() => {
+                  navigation.navigate('Friends', {tab: 0});
+                }}
+              />
+              {reqsNum > 0 ? (
+                <Badge
+                  status="error"
+                  value={reqsNum}
+                  containerStyle={{position: 'absolute', top: -5, left: 195}}
+                />
+              ) : (
+                <></>
+              )}
+            </View>
+
+            <Button
+              title="PROFILO"
+              buttonStyle={[styles.buttonStyle, {backgroundColor: '#f2bd29'}]}
+              titleStyle={styles.titleStyle}
+              containerStyle={styles.buttonContainerStyle}
+              icon={{
+                name: 'account',
+                type: 'material-community',
+                size: 30,
+                color: 'white',
+              }}
+              onPress={() => {
+                navigation.navigate('Statistics');
+              }}
+            />
+
+            <Button
+              title="TUTORIAL"
+              buttonStyle={[styles.buttonStyle, {backgroundColor: '#26a69a'}]}
+              titleStyle={styles.titleStyle}
+              containerStyle={styles.buttonContainerStyle}
+              icon={{
+                name: 'help-circle-outline',
+                type: 'material-community',
+                size: 30,
+                color: 'white',
+              }}
+              onPress={() => {
+                navigation.navigate('Statistics');
+              }}
+            />
+
+            <Button
+              buttonStyle={([styles.buttonStyle], {backgroundColor: '#373737'})}
+              titleStyle={styles.titleStyle}
+              containerStyle={styles.buttonContainerStyle}
+              icon={{
+                name: 'logout',
+                type: 'material-community',
+                size: 30,
+                color: 'white',
+              }}
+              title="LOG OUT"
+              onPress={() => {
+                signOut();
+              }}
+            />
+          </View>
+
+          <CreateMatchDialog
+            showOverlay={showOverlay}
+            toggleOverlay={toggleOverlay}
+            navigation={navigation}
+            setToggleLoading={setToggleLoading}
           />
-          {reqsNum > 0 ? (
-            <Badge
-              status="error"
-              value={reqsNum}
-              containerStyle={{position: 'absolute', top: -5, left: 125}}
-            />
-          ) : (
-            <></>
-          )}
+          <TextE
+            h4
+            h4Style={{
+              color: 'black',
+              fontSize: 11,
+              width: '80%',
+              textAlign: 'center',
+              marginTop: '5%',
+            }}>
+            id: {userData.uid}
+          </TextE>
         </View>
-
-        <Button
-          title="PROFILO"
-          buttonStyle={{marginBottom: '5%'}}
-          onPress={() => {
-            navigation.navigate('Statistics');
-          }}
-        />
-
-        <Button
-          title="LOG OUT"
-          onPress={() => {
-            signOut();
-          }}
-        />
       </View>
-
-      <CreateMatchDialog
-        showOverlay={showOverlay}
-        toggleOverlay={toggleOverlay}
-        navigation={navigation}
-        setToggleLoading={setToggleLoading}
-      />
-    </View>
+    </ImageBackground>
   );
 };
+
+const styles = StyleSheet.create({
+  buttonStyle: {},
+  titleStyle: {fontSize: 20},
+  buttonContainerStyle: {borderRadius: 15},
+});
 
 const playerNumDropList = [
   {label: '2', value: 2},

@@ -114,10 +114,11 @@ const App = () => {
             <Stack.Screen
               name="Homepage"
               component={Home}
-              options={{
-                headerLeft: props => <></>,
-                gestureEnabled: false,
-              }}
+              // options={{
+              //   headerLeft: props => <></>,
+              //   gestureEnabled: false,
+              // }}
+              options={{headerShown: false}}
             />
             <Stack.Screen
               options={{headerShown: false}}
