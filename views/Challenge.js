@@ -270,10 +270,11 @@ const Challenge = ({route, navigation}) => {
         onChange={e => setIndex(e)}
         indicatorStyle={{
           backgroundColor: 'white',
-          height: 3,
+          height: 5,
         }}
         variant="primary">
         <Tab.Item
+          containerStyle={{backgroundColor: '#ff7042'}}
           title="Lancia sfida"
           titleStyle={{fontSize: 17}}
           icon={{
@@ -284,6 +285,7 @@ const Challenge = ({route, navigation}) => {
           }}
         />
         <Tab.Item
+          containerStyle={{backgroundColor: '#ff7042'}}
           title="Sfide ricevute"
           titleStyle={{fontSize: 17}}
           icon={{
@@ -294,6 +296,7 @@ const Challenge = ({route, navigation}) => {
           }}
         />
         <Tab.Item
+          containerStyle={{backgroundColor: '#ff7042'}}
           title="Sfide lanciate"
           titleStyle={{fontSize: 17}}
           icon={{
