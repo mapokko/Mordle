@@ -19,6 +19,7 @@ import Ending from './views/Ending';
 import Statistics from './views/Statistics';
 import Friends from './views/Friends';
 import Challenge from './views/Challenge';
+import PlayBoardAlt from './views/PlayerBoardAlt';
 
 import messaging from '@react-native-firebase/messaging';
 import {handleNotification} from './helper/notificationHandler';
@@ -86,6 +87,8 @@ const App = () => {
     if (remoteMessage) {
       if (remoteMessage.data.type == 'friendRequests') {
         navigationRef.current.navigate('Friends', {tab: 2});
+      } else if (remoteMessage.data.type == 'newChallenge') {
+        navigationRef.current.navigate('Challenge', {tab: 1});
       }
     }
   };
@@ -133,6 +136,11 @@ const App = () => {
               options={{headerShown: false}}
               name="Challenge"
               component={Challenge}
+            />
+            <Stack.Screen
+              options={{headerShown: false}}
+              name="Playboardalt"
+              component={PlayBoardAlt}
             />
             <Stack.Screen
               options={{headerShown: false}}

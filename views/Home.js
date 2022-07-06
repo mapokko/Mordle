@@ -42,6 +42,7 @@ const Home = ({navigation}) => {
   const [initializing, setInitializing] = useState(true);
   const [user, setUser] = useState();
   const [reqsNum, setReqsNum] = useState(0);
+  const [challengeNum, setChallengeNum] = useState(0);
   const con = useContext(UserContext);
 
   const [toggleLoading, setToggleLoading] = useState(false);
@@ -74,6 +75,24 @@ const Home = ({navigation}) => {
         })
         .catch(err => {
           console.log('ERROR IN USER FETCH:  ' + err);
+        });
+
+      firestore()
+        .collection('users')
+        .where('uid', '==', auth().currentUser.uid)
+        .get()
+        .then(qs => {
+          firestore()
+            .collection('challenges')
+            .where('to', '==', qs.docs[0].id)
+            .get()
+            .then(qs => {
+              setChallengeNum(qs.docs.length);
+            });
+        })
+        .catch(err => {
+          console.log('failed to retrive realUid');
+          console.log(err);
         });
     }, []),
   );
@@ -204,14 +223,24 @@ const Home = ({navigation}) => {
             navigation.navigate('Search');
           }}
         />
-
-        <Button
-          title="SFIDE"
-          buttonStyle={{marginBottom: '5%'}}
-          onPress={() => {
-            navigation.navigate('Challenge');
-          }}
-        />
+        <View>
+          <Button
+            title="SFIDE"
+            buttonStyle={{marginBottom: '5%'}}
+            onPress={() => {
+              navigation.navigate('Challenge', {tab: 0});
+            }}
+          />
+          {challengeNum > 0 ? (
+            <Badge
+              status="error"
+              value={challengeNum}
+              containerStyle={{position: 'absolute', top: -5, left: 125}}
+            />
+          ) : (
+            <></>
+          )}
+        </View>
 
         <Button
           title="INFINITO"

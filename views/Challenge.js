@@ -20,6 +20,7 @@ import auth from '@react-native-firebase/auth';
 
 import Loading from '../components/Loading';
 import {randomWords} from '../helper/comms';
+import {template} from '@babel/core';
 
 const LocalContext = createContext();
 
@@ -49,8 +50,8 @@ const reducer = (state, action) => {
   }
 };
 
-const Challenge = () => {
-  const [index, setIndex] = useState(0);
+const Challenge = ({route, navigation}) => {
+  const [index, setIndex] = useState(route.params.tab);
   const [loading, setLoading] = useState(false);
   const [receivedChall, setReceivedChall] = useState([]);
   const [sentChall, setSentChall] = useState([]);
@@ -68,12 +69,14 @@ const Challenge = () => {
     friends,
     dispatchLocal,
     setShowAdd,
+    navigation,
   };
 
   const [tmp, setTmp] = useState(0);
 
   useFocusEffect(
     React.useCallback(() => {
+      setFriends([]);
       firestore()
         .collection('users')
         .where('uid', '==', auth().currentUser.uid)
@@ -87,6 +90,9 @@ const Challenge = () => {
           console.log('failed to retrive realUid');
           console.log(err);
         });
+      return () => {
+        setFriends([]);
+      };
     }, []),
   );
 
@@ -95,23 +101,33 @@ const Challenge = () => {
       if (realUid == '') {
         return;
       }
+      setReceivedChall([]);
+      setSentChall([]);
+
       const unsub1 = firestore()
         .collection('challenges')
         .where('to', '==', realUid)
         .onSnapshot(
           qs => {
+            let promises = [];
+            let tmp = [];
             setReceivedChall([]);
             for (let i = 0; i < qs.docs.length; i++) {
-              firestore()
+              const prom = firestore()
                 .collection('users')
                 .doc(qs.docs[i].data().from)
                 .get()
                 .then(query => {
-                  setReceivedChall(curr => {
-                    return [...curr, {challenge: qs.docs[i], player: query}];
-                  });
+                  tmp.push({challenge: qs.docs[i], player: query});
+                  // setReceivedChall(curr => {
+                  //   return [...curr, {challenge: qs.docs[i], player: query}];
+                  // });
                 });
+              promises.push(prom);
             }
+            Promise.all(promises).then(values => {
+              setReceivedChall(tmp);
+            });
           },
           err => {
             ToastAndroid.show('Sfide mandate non trovate..', ToastAndroid.LONG);
@@ -126,17 +142,24 @@ const Challenge = () => {
         .onSnapshot(
           qs => {
             setSentChall([]);
+            const promises = [];
+            const tmp = [];
             for (let i = 0; i < qs.docs.length; i++) {
-              firestore()
+              const prom = firestore()
                 .collection('users')
                 .doc(qs.docs[i].data().to)
                 .get()
                 .then(query => {
-                  setSentChall(curr => {
-                    return [...curr, {challenge: qs.docs[i], player: query}];
-                  });
+                  tmp.push({challenge: qs.docs[i], player: query});
+                  // setSentChall(curr => {
+                  //   return [...curr, {challenge: qs.docs[i], player: query}];
+                  // });
                 });
+              promises.push(prom);
             }
+            Promise.all(promises).then(() => {
+              setSentChall(tmp);
+            });
           },
           err => {
             ToastAndroid.show('Sfide mandate non trovate..', ToastAndroid.LONG);
@@ -146,6 +169,9 @@ const Challenge = () => {
         );
 
       return () => {
+        console.log('removing stuff');
+        setReceivedChall([]);
+        setSentChall([]);
         unsub1();
         unsub2();
       };
@@ -162,6 +188,12 @@ const Challenge = () => {
 
   return (
     <>
+      <Button
+        onPress={() => {
+          console.log(receivedChall);
+        }}>
+        ss
+      </Button>
       <Dialog
         isVisible={showAdd}
         animationType="fade"
@@ -181,7 +213,7 @@ const Challenge = () => {
             size="lg"
             value={addState.word}
             onChangeText={txt => {
-              dispatchLocal({type: 'setWord', payload: txt.toLowerCase()});
+              dispatchLocal({type: 'setWord', payload: txt});
             }}
           />
           <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>
@@ -218,9 +250,10 @@ const Challenge = () => {
               }
               setLoading(true);
               const seconds = addState.time * 60;
+              const word = addState.word.toLowerCase();
               firestore()
                 .collection('challenges')
-                .add({...addState, time: seconds})
+                .add({...addState, time: seconds, word: word})
                 .then(() => {
                   setLoading(false);
                   setShowAdd(false);
@@ -373,7 +406,18 @@ const ReceivedChallengesTab = () => {
                 </Text>
                 <Text>tempo: {toMinute(value.challenge.data().time)}</Text>
                 {value.challenge.data().result == 'none' ? (
-                  <Button bgColor="#1a69a9" mt="3" _text={{fontSize: 'lg'}}>
+                  <Button
+                    bgColor="#1a69a9"
+                    mt="3"
+                    _text={{fontSize: 'lg'}}
+                    onPress={() => {
+                      console.log();
+                      con.navigation.replace('Playboardalt', {
+                        mode: 'challenge',
+                        challengeId: value.challenge.id,
+                        challengeDoc: value.challenge.data(),
+                      });
+                    }}>
                     COMINCIA
                   </Button>
                 ) : (
@@ -409,17 +453,24 @@ const CreateChallengeTab = () => {
   useFocusEffect(
     React.useCallback(() => {
       setFriendsData([]);
+      const promises = [];
+      const tmp = [];
       for (let i = 0; i < con.friends.length; i++) {
-        firestore()
+        const prom = firestore()
           .collection('users')
           .where('uid', '==', con.friends[i])
           .get()
           .then(qs => {
-            setFriendsData(prev => {
-              return [...prev, qs.docs[0]];
-            });
+            tmp.push(qs.docs[0]);
+            // setFriendsData(prev => {
+            //   return [...prev, qs.docs[0]];
+            // });
           });
+        promises.push(prom);
       }
+      Promise.all(promises).then(() => {
+        setFriendsData(tmp);
+      });
     }, [con.friends]),
   );
   return (
@@ -464,6 +515,7 @@ const CreateChallengeTab = () => {
       <ScrollView>
         {(filterFriends.length > 0 ? filterFriends : friendsData).map(
           (value, index) => {
+            // {friendsData.map((value, index) => {
             return (
               <Card key={index} containerStyle={{borderRadius: 10}}>
                 <View style={{marginBottom: '3%'}}>

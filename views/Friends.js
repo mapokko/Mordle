@@ -23,13 +23,18 @@ const Friends = ({route}) => {
 
   useFocusEffect(
     React.useCallback(() => {
-      firestore()
+      const subscribe = firestore()
         .collection('users')
         .where('uid', '==', auth().currentUser.uid)
         .onSnapshot(qs => {
           setFriends(qs.docs[0].data().friends);
           setFriendReqs(qs.docs[0].data().friendRequests);
         });
+      return () => {
+        setFriends([]);
+        setFriendReqs([]);
+        subscribe();
+      };
     }, []),
   );
 
@@ -47,17 +52,32 @@ const Friends = ({route}) => {
         <Tab.Item
           title="Giocatori"
           titleStyle={{fontSize: 17}}
-          icon={{name: 'search', type: 'font-awesome', color: 'white'}}
+          icon={{
+            name: 'account-search',
+            type: 'material-community',
+            color: 'white',
+            size: 25,
+          }}
         />
         <Tab.Item
           title="Amici"
           titleStyle={{fontSize: 17}}
-          icon={{name: 'users', type: 'font-awesome', color: 'white'}}
+          icon={{
+            name: 'account-group',
+            type: 'material-community',
+            color: 'white',
+            size: 25,
+          }}
         />
         <Tab.Item
           title="Richieste"
           titleStyle={{fontSize: 17}}
-          icon={{name: 'plus-circle', type: 'font-awesome', color: 'white'}}
+          icon={{
+            name: 'account-multiple-plus',
+            type: 'material-community',
+            color: 'white',
+            size: 25,
+          }}
         />
       </Tab>
       <LoadingContext.Provider value={con}>
@@ -244,18 +264,27 @@ const FriendsTab = () => {
   useFocusEffect(
     React.useCallback(() => {
       setFriendsData([]);
+      const tmp = [];
+      const promises = [];
       for (let i = 0; i < con.friends.length; i++) {
-        firestore()
+        const prom = firestore()
           .collection('users')
           .where('uid', '==', con.friends[i])
           .get()
           .then(qs => {
-            setFriendsData(prev => {
-              return [...prev, qs.docs[0].data()];
-            });
+            tmp.push(qs.docs[0].data());
+            // setFriendsData(prev => {
+            //   return [...prev, qs.docs[0].data()];
+            // });
           });
       }
+      Promise.all(promises).then(() => {
+        setFriendsData(tmp);
+      });
       //   setFriendsData(newData);
+      return () => {
+        setFriendsData([]);
+      };
     }, [con.friends]),
   );
 
@@ -309,17 +338,27 @@ const ReqsTab = ({}) => {
   useFocusEffect(
     React.useCallback(() => {
       setReqsData([]);
+      const tmp = [];
+      const promises = [];
       for (let i = 0; i < con.friendReqs.length; i++) {
-        firestore()
+        const prom = firestore()
           .collection('users')
           .where('uid', '==', con.friendReqs[i])
           .get()
           .then(qs => {
-            setReqsData(prev => {
-              return [...prev, qs.docs[0].data()];
-            });
+            tmp.push(qs.docs[0].data());
+            // setReqsData(prev => {
+            //   return [...prev, qs.docs[0].data()];
+            // });
           });
+        promises.push(prom);
       }
+      Promise.all(promises).then(() => {
+        setReqsData(tmp);
+      });
+      return () => {
+        setReqsData([]);
+      };
     }, [con.friendReqs]),
   );
 
