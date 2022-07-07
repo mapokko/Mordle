@@ -103,18 +103,20 @@ const PlayerSearchTab = () => {
   const con = useContext(LoadingContext);
 
   const addFriend = friendUid => {
+    con.setLoading(true);
+
     firestore()
       .collection('users')
       .where('uid', '==', friendUid)
       .get()
       .then(qs => {
         firestore()
-          .collection('users')
-          .doc(qs.docs[0].id)
-          .update({
-            friendRequests: firestore.FieldValue.arrayUnion(
-              auth().currentUser.uid,
-            ),
+          .runTransaction(async t => {
+            await t.update(firestore().collection('users').doc(qs.docs[0].id), {
+              friendRequests: firestore.FieldValue.arrayUnion(
+                auth().currentUser.uid,
+              ),
+            });
           })
           .then(() => {
             con.setLoading(false);
@@ -123,8 +125,32 @@ const PlayerSearchTab = () => {
           .catch(err => {
             con.setLoading(false);
             ToastAndroid.show('Richiesta fallita!', ToastAndroid.LONG);
+
             console.log(err);
           });
+
+        // firestore()
+        //   .collection('users')
+        //   .doc(qs.docs[0].id)
+        //   .update({
+        //     friendRequests: firestore.FieldValue.arrayUnion(
+        //       auth().currentUser.uid,
+        //     ),
+        //   })
+        //   .then(() => {
+        //     con.setLoading(false);
+        //     ToastAndroid.show('Richiesta mandata!', ToastAndroid.LONG);
+        //   })
+        //   .catch(err => {
+        //     con.setLoading(false);
+        //     ToastAndroid.show('Richiesta fallita!', ToastAndroid.LONG);
+        //     console.log(err);
+        //   });
+      })
+      .catch(err => {
+        console.log('FRIEND SEARCH FAILED');
+        console.log(err);
+        con.setLoading(false);
       });
   };
 
@@ -398,16 +424,18 @@ const ReqsTab = ({}) => {
                     .get()
                     .then(qs => {
                       firestore()
-                        .collection('users')
-                        .doc(qs.docs[0].id)
-                        .update({
-                          friendRequests: firestore.FieldValue.arrayRemove(
-                            value.uid,
-                          ),
-                          friends: firestore.FieldValue.arrayUnion(value.uid),
-                        })
-                        .then(() => {
-                          con.setLoading(false);
+                        .runTransaction(async t => {
+                          await t.update(
+                            firestore().collection('users').doc(qs.docs[0].id),
+                            {
+                              friendRequests: firestore.FieldValue.arrayRemove(
+                                value.uid,
+                              ),
+                              friends: firestore.FieldValue.arrayUnion(
+                                value.uid,
+                              ),
+                            },
+                          );
                         })
                         .catch(err => {
                           ToastAndroid.show(
@@ -415,8 +443,31 @@ const ReqsTab = ({}) => {
                             ToastAndroid.LONG,
                           );
                           console.log(err);
+                        })
+                        .finally(() => {
                           con.setLoading(false);
                         });
+
+                      // firestore()
+                      //   .collection('users')
+                      //   .doc(qs.docs[0].id)
+                      //   .update({
+                      //     friendRequests: firestore.FieldValue.arrayRemove(
+                      //       value.uid,
+                      //     ),
+                      //     friends: firestore.FieldValue.arrayUnion(value.uid),
+                      //   })
+                      //   .then(() => {
+                      //     con.setLoading(false);
+                      //   })
+                      //   .catch(err => {
+                      //     ToastAndroid.show(
+                      //       'Amicizia non possibile..',
+                      //       ToastAndroid.LONG,
+                      //     );
+                      //     console.log(err);
+                      //     con.setLoading(false);
+                      //   });
                     })
                     .catch(err => {
                       ToastAndroid.show(
@@ -433,14 +484,16 @@ const ReqsTab = ({}) => {
                     .get()
                     .then(qs => {
                       firestore()
-                        .collection('users')
-                        .doc(qs.docs[0].id)
-                        .update({
-                          friends: firestore.FieldValue.arrayUnion(
-                            auth().currentUser.uid,
-                          ),
+                        .runTransaction(async t => {
+                          await t.update(
+                            firestore().collection('users').doc(qs.docs[0].id),
+                            {
+                              friends: firestore.FieldValue.arrayUnion(
+                                auth().currentUser.uid,
+                              ),
+                            },
+                          );
                         })
-                        .then(() => {})
                         .catch(err => {
                           ToastAndroid.show(
                             'non aggiunto ad amico..',
@@ -448,6 +501,22 @@ const ReqsTab = ({}) => {
                           );
                           console.log(err);
                         });
+
+                      // firestore()
+                      //   .collection('users')
+                      //   .doc(qs.docs[0].id)
+                      //   .update({
+                      //     friends: firestore.FieldValue.arrayUnion(
+                      //       auth().currentUser.uid,
+                      //     ),
+                      //   })
+                      //   .catch(err => {
+                      //     ToastAndroid.show(
+                      //       'non aggiunto ad amico..',
+                      //       ToastAndroid.LONG,
+                      //     );
+                      //     console.log(err);
+                      //   });
                     });
                 }}>
                 ACCETTA
@@ -467,15 +536,15 @@ const ReqsTab = ({}) => {
                     .get()
                     .then(qs => {
                       firestore()
-                        .collection('users')
-                        .doc(qs.docs[0].id)
-                        .update({
-                          friendRequests: firestore.FieldValue.arrayRemove(
-                            value.uid,
-                          ),
-                        })
-                        .then(() => {
-                          con.setLoading(false);
+                        .runTransaction(async t => {
+                          await t.update(
+                            firestore().collection('users').doc(qs.docs[0].id),
+                            {
+                              friendRequests: firestore.FieldValue.arrayRemove(
+                                value.uid,
+                              ),
+                            },
+                          );
                         })
                         .catch(err => {
                           ToastAndroid.show(
@@ -483,8 +552,30 @@ const ReqsTab = ({}) => {
                             ToastAndroid.LONG,
                           );
                           console.log(err);
+                        })
+                        .finally(() => {
                           con.setLoading(false);
                         });
+
+                      // firestore()
+                      //   .collection('users')
+                      //   .doc(qs.docs[0].id)
+                      //   .update({
+                      //     friendRequests: firestore.FieldValue.arrayRemove(
+                      //       value.uid,
+                      //     ),
+                      //   })
+                      //   .then(() => {
+                      //     con.setLoading(false);
+                      //   })
+                      //   .catch(err => {
+                      //     ToastAndroid.show(
+                      //       'rimozione non possibile..',
+                      //       ToastAndroid.LONG,
+                      //     );
+                      //     console.log(err);
+                      //     con.setLoading(false);
+                      //   });
                     })
                     .catch(err => {
                       ToastAndroid.show(
@@ -492,6 +583,8 @@ const ReqsTab = ({}) => {
                         ToastAndroid.LONG,
                       );
                       console.log(err);
+                    })
+                    .finally(() => {
                       con.setLoading(false);
                     });
                 }}>

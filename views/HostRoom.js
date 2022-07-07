@@ -137,11 +137,15 @@ const HostRoom = ({route, navigation}) => {
           e.data.action.type == 'NAVIGATE'
         ) {
           console.log('RUNNING');
-          console.log(matchData.matchId);
+
           firestore()
-            .collection('matches')
-            .doc(matchData.matchId)
-            .update({canc: true, wait: false, play: false})
+            .runTransaction(async t => {
+              const query = firestore()
+                .collection('matches')
+                .doc(matchData.matchId);
+
+              await t.update(query, {canc: true, wait: false, play: false});
+            })
             .then(() => {
               dispatch(clear());
               navigation.dispatch(e.data.action);
@@ -149,6 +153,18 @@ const HostRoom = ({route, navigation}) => {
             .catch(err => {
               console.log(err);
             });
+
+          // firestore()
+          //   .collection('matches')
+          //   .doc(matchData.matchId)
+          //   .update({canc: true, wait: false, play: false})
+          //   .then(() => {
+          //     dispatch(clear());
+          //     navigation.dispatch(e.data.action);
+          //   })
+          //   .catch(err => {
+          //     console.log(err);
+          //   });
         } else if (
           e.data.action.payload?.name == 'Playerboard' &&
           e.data.action.type == 'NAVIGATE'
@@ -372,16 +388,27 @@ const ChatTab = () => {
         message: msg,
       };
 
+      con.setLoading(true);
       firestore()
-        .collection('matches')
-        .doc(matchData.matchId)
-        .update({
-          chat: [...con.chat, toSend],
+        .runTransaction(async transaction => {
+          const query = firestore()
+            .collection('matches')
+            .doc(matchData.matchId);
+
+          const doc = await transaction.get(query);
+
+          await transaction.update(query, {
+            chat: [...doc.data().chat, toSend],
+          });
+        })
+        .then(() => {
+          setMsg('');
+          con.setLoading(false);
         })
         .catch(error => {
           console.log(error);
+          con.setLoading(false);
         });
-      setMsg('');
     }
   };
   return (
@@ -426,9 +453,9 @@ const ChatTab = () => {
           onChangeText={text => setMsg(text)}
           rightIcon={
             <Icon
-              name="sc-telegram"
-              type="evilicon"
-              iconStyle={{fontSize: 45}}
+              name="send"
+              type="material-community"
+              iconStyle={{fontSize: 30}}
               containerStyle={{borderRadius: 100}}
               onPress={() => {
                 sendMsg();

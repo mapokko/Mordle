@@ -344,7 +344,9 @@ const Home = ({navigation}) => {
                 color: 'white',
               }}
               onPress={() => {
-                navigation.navigate('Statistics');
+                navigation.navigate('Statistics', {
+                  uid: auth().currentUser.uid,
+                });
               }}
             />
 

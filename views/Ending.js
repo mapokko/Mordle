@@ -46,6 +46,9 @@ const Ending = ({route, navigation}) => {
                   setFinalScore(() => {
                     return data.scores[auth().currentUser.uid];
                   });
+                  if (data.hostUid == auth().currentUser.uid) {
+                    uploadPodium(data.scores);
+                  }
                   // prepResult(data.scores);
                 }
               }
@@ -62,8 +65,6 @@ const Ending = ({route, navigation}) => {
       if (finalScore == null) {
         return;
       }
-      // console.log(finalScore);
-      // console.log(scores);
 
       const sorted = Object.entries(scores).sort(
         (a, b) => b[1].scored - a[1].scored,
@@ -115,6 +116,58 @@ const Ending = ({route, navigation}) => {
       setToggleLoading(false);
     }, [finalScore, scores]),
   );
+
+  // useFocusEffect(
+  //   React.useCallback(() => {
+  //     if (flag == false && scores.length == data.scores.length)
+  //       uploadPodium(scores);
+  //   }, [flag, scores]),
+  // );
+
+  const uploadPodium = realScores => {
+    let finalPodium = [];
+    const sorted = Object.entries(realScores).sort(
+      (a, b) => b[1].scored - a[1].scored,
+    );
+
+    let flag = true;
+    let highest = sorted[0][1].scored;
+    let current = highest;
+    let lowest = sorted[sorted.length - 1][1].scored;
+    while (flag) {
+      let bracket = sorted.filter((val, index) => {
+        if (val[1].scored == current) {
+          return true;
+        } else {
+          return false;
+        }
+      });
+      if (bracket.length > 0) {
+        bracket = bracket.sort((a, b) => a[1].time - b[1].time);
+        finalPodium = finalPodium.concat(bracket);
+        if (current == lowest) {
+          flag = false;
+        }
+      }
+      current--;
+    }
+    finalPodium = finalPodium.map(val => {
+      return val[0];
+    });
+
+    firestore()
+      .runTransaction(async t => {
+        const query = firestore().collection('matches').doc(matchData.matchId);
+
+        await t.update(query, {
+          podium: finalPodium,
+        });
+      })
+      .catch(err => {
+        console.log('PODIUM UPLOAD FAILED');
+        console.log(err);
+      });
+  };
 
   useFocusEffect(
     React.useCallback(() => {

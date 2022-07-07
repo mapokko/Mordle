@@ -271,28 +271,55 @@ const PlayBoard = ({route, navigation}) => {
           e.data.action.type == 'NAVIGATE'
         ) {
           firestore()
-            .collection('matches')
-            .doc(matchData.matchId)
-            .get()
-            .then(doc => {
-              const data = doc._data;
-              firestore()
+            .runTransaction(async t => {
+              const query = firestore()
                 .collection('matches')
-                .doc(matchData.matchId)
-                .update({
-                  scores: {
-                    ...data.scores,
-                    [auth().currentUser.uid]: {
-                      scored: matchData.scored,
-                      status: 'abandon',
-                      time: matchData.time,
-                    },
+                .doc(matchData.matchId);
+
+              const doc = await t.get(query);
+
+              await t.update(query, {
+                scores: {
+                  ...doc.data().scores,
+                  [auth().currentUser.uid]: {
+                    scored: matchData.scored,
+                    status: 'abandon',
+                    time: matchData.time,
                   },
-                })
-                .then(() => {
-                  navigation.dispatch(e.data.action);
-                });
+                },
+              });
+            })
+            .then(() => {
+              navigation.dispatch(e.data.action);
+            })
+            .catch(err => {
+              console.log('FAILED TO UPDATE MATCH WHILE ABANDONING');
+              console.log(err);
             });
+
+          // firestore()
+          //   .collection('matches')
+          //   .doc(matchData.matchId)
+          //   .get()
+          //   .then(doc => {
+          //     const data = doc._data;
+          //     firestore()
+          //       .collection('matches')
+          //       .doc(matchData.matchId)
+          //       .update({
+          //         scores: {
+          //           ...data.scores,
+          //           [auth().currentUser.uid]: {
+          //             scored: matchData.scored,
+          //             status: 'abandon',
+          //             time: matchData.time,
+          //           },
+          //         },
+          //       })
+          //       .then(() => {
+          //         navigation.dispatch(e.data.action);
+          //       });
+          //   });
         } else if (
           e.data.action.payload?.name == 'Playboard' &&
           e.data.action.type == 'REPLACE'
@@ -355,26 +382,44 @@ const PlayBoard = ({route, navigation}) => {
     } else {
       status = 'playing';
     }
-    firestore()
-      .collection('matches')
-      .doc(matchData.matchId)
-      .get()
-      .then(doc => {
-        const data = doc._data;
-        firestore()
-          .collection('matches')
-          .doc(matchData.matchId)
-          .update({
-            scores: {
-              ...data.scores,
-              [auth().currentUser.uid]: {
-                scored: matchData.scored,
-                status: status,
-                time: matchData.time,
-              },
-            },
-          });
+
+    firestore().runTransaction(async t => {
+      const query = firestore().collection('matches').doc(matchData.matchId);
+
+      const doc = await t.get(query);
+
+      await t.update(query, {
+        scores: {
+          ...doc.data().scores,
+          [auth().currentUser.uid]: {
+            scored: matchData.scored,
+            status: status,
+            time: matchData.time,
+          },
+        },
       });
+    });
+
+    // firestore()
+    //   .collection('matches')
+    //   .doc(matchData.matchId)
+    //   .get()
+    //   .then(doc => {
+    //     const data = doc._data;
+    //     firestore()
+    //       .collection('matches')
+    //       .doc(matchData.matchId)
+    //       .update({
+    //         scores: {
+    //           ...data.scores,
+    //           [auth().currentUser.uid]: {
+    //             scored: matchData.scored,
+    //             status: status,
+    //             time: matchData.time,
+    //           },
+    //         },
+    //       });
+    //   });
 
     if (status == 'playing') {
       dispatch(next());

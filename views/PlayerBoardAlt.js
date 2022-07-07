@@ -264,9 +264,13 @@ const PlayBoardAlt = ({route, navigation}) => {
           console.log('FAILING CHALLENGE');
 
           firestore()
-            .collection('challenges')
-            .doc(challengeId)
-            .update({result: 'lose'})
+            .runTransaction(async t => {
+              const query = firestore()
+                .collection('challenges')
+                .doc(challengeId);
+
+              await t.update(query, {result: 'lose'});
+            })
             .then(() => {
               console.log('put to lose');
               navigation.dispatch(e.data.action);
@@ -275,6 +279,19 @@ const PlayBoardAlt = ({route, navigation}) => {
               console.log('problem');
               console.log(err);
             });
+
+          // firestore()
+          //   .collection('challenges')
+          //   .doc(challengeId)
+          //   .update({result: 'lose'})
+          //   .then(() => {
+          //     console.log('put to lose');
+          //     navigation.dispatch(e.data.action);
+          //   })
+          //   .catch(err => {
+          //     console.log('problem');
+          //     console.log(err);
+          //   });
         } else if (
           e.data.action.payload?.name == 'Challenge' &&
           e.data.action.type == 'REPLACE'
@@ -370,17 +387,33 @@ const PlayBoardAlt = ({route, navigation}) => {
   const endChallenge = () => {
     const result = dialogColor == 'green' ? 'win' : 'lose';
     firestore()
-      .collection('challenges')
-      .doc(challengeId)
-      .update({result: result})
+      .runTransaction(async t => {
+        const query = firestore().collection('challenges').doc(challengeId);
+
+        await t.update(query, {result: result});
+      })
       .then(() => {
         console.log('result updated');
       })
       .catch(err => {
         console.log('result NOT update');
         console.log(err);
+      })
+      .finally(() => {
+        navigation.replace('Challenge', {tab: 1});
       });
-    navigation.replace('Challenge', {tab: 1});
+
+    // firestore()
+    //   .collection('challenges')
+    //   .doc(challengeId)
+    //   .update({result: result})
+    //   .then(() => {
+    //     console.log('result updated');
+    //   })
+    //   .catch(err => {
+    //     console.log('result NOT update');
+    //     console.log(err);
+    //   });
   };
   return (
     <View h="full">

@@ -43,7 +43,8 @@ const PlayerRoom = ({route, navigation}) => {
   useFocusEffect(
     React.useCallback(() => {
       dispatch(clear());
-      firestore()
+      setLoading(true);
+      const prom1 = firestore()
         .collection('matches')
         .doc(id)
         .get()
@@ -52,38 +53,70 @@ const PlayerRoom = ({route, navigation}) => {
           dispatch(setWords(doc.data().words));
           dispatch(setHost(doc.data().hostName));
           dispatch(setHostUid(doc.data().hostUid));
+          // firestore()
+          //   .collection('matches')
+          //   .doc(doc.id)
+          //   .update({
+          //     playersName: [
+          //       ...doc.data().playersName,
+          //       auth().currentUser.displayName,
+          //     ],
+          //     playersUid: [...doc.data().playersUid, auth().currentUser.uid],
+          //     chat: [
+          //       ...doc.data().chat,
+          //       {
+          //         author: 'Mordle',
+          //         message: `${
+          //           auth().currentUser.displayName
+          //         } si e' unito alla partita!`,
+          //       },
+          //     ],
+          //   });
 
-          firestore()
-            .collection('matches')
-            .doc(doc.id)
-            .update({
-              playersName: [
-                ...doc.data().playersName,
-                auth().currentUser.displayName,
-              ],
-              playersUid: [...doc.data().playersUid, auth().currentUser.uid],
-            });
-
-          firestore()
-            .collection('matches')
-            .doc(doc.id)
-            .update({
-              chat: [
-                ...doc.data().chat,
-                {
-                  author: 'Mordle',
-                  message: `${
-                    auth().currentUser.displayName
-                  } si e' unito alla partita!`,
-                },
-              ],
-            });
-          setLoading(false);
+          // firestore()
+          //   .collection('matches')
+          //   .doc(doc.id)
+          //   .update({
+          //     chat: [
+          //       ...doc.data().chat,
+          //       {
+          //         author: 'Mordle',
+          //         message: `${
+          //           auth().currentUser.displayName
+          //         } si e' unito alla partita!`,
+          //       },
+          //     ],
+          //   });
         })
         .catch(err => {
           console.log('ERR IN FETCH INIT DATA PLAYERROOM');
           console.log(err);
         });
+
+      const prom2 = firestore().runTransaction(async transaction => {
+        const query = firestore().collection('matches').doc(id);
+        const doc = await transaction.get(query);
+        await transaction.update(query, {
+          playersName: [
+            ...doc.data().playersName,
+            auth().currentUser.displayName,
+          ],
+          playersUid: [...doc.data().playersUid, auth().currentUser.uid],
+          chat: [
+            ...doc.data().chat,
+            {
+              author: 'Mordle',
+              message: `${
+                auth().currentUser.displayName
+              } si e' unito alla partita!`,
+            },
+          ],
+        });
+      });
+
+      Promise.all([prom1, prom2]).then(() => {
+        setLoading(false);
+      });
     }, []),
   );
 
@@ -103,22 +136,47 @@ const PlayerRoom = ({route, navigation}) => {
                 setWaitPlayers(data.playersName);
                 setWaitPlayersUid(data.playersUid);
                 if (data.play == true && data.finish == false) {
+                  setLoading(true);
                   firestore()
-                    .collection('matches')
-                    .doc(matchData.matchId)
-                    .update({
-                      scores: {
-                        ...data.scores,
-                        [auth().currentUser.uid]: {
-                          scored: 0,
-                          status: 'playing',
-                          time: 0,
+                    .runTransaction(async transaction => {
+                      const query = firestore()
+                        .collection('matches')
+                        .doc(matchData.matchId);
+                      const snapshot = await transaction.get(query);
+                      await transaction.update(query, {
+                        scores: {
+                          ...snapshot.data().scores,
+                          [auth().currentUser.uid]: {
+                            scored: 0,
+                            status: 'playing',
+                            time: 0,
+                          },
                         },
-                      },
+                      });
                     })
                     .then(() => {
                       navigation.navigate('Playboard');
+                    })
+                    .finally(() => {
+                      setLoading(false);
                     });
+
+                  // firestore()
+                  //   .collection('matches')
+                  //   .doc(matchData.matchId)
+                  //   .update({
+                  //     scores: {
+                  //       ...data.scores,
+                  //       [auth().currentUser.uid]: {
+                  //         scored: 0,
+                  //         status: 'playing',
+                  //         time: 0,
+                  //       },
+                  //     },
+                  //   })
+                  //   .then(() => {
+                  //     navigation.navigate('Playboard');
+                  //   });
                 }
               }
             }
@@ -145,10 +203,13 @@ const PlayerRoom = ({route, navigation}) => {
           console.log('RUNNING');
 
           firestore()
-            .collection('matches')
-            .doc(matchData.matchId)
-            .get()
-            .then(doc => {
+            .runTransaction(async transaction => {
+              const query = firestore()
+                .collection('matches')
+                .doc(matchData.matchId);
+
+              const doc = await transaction.get(query);
+
               let tmpIndex;
               doc.data().playersUid.forEach((el, index) => {
                 console.log(el);
@@ -157,25 +218,55 @@ const PlayerRoom = ({route, navigation}) => {
                 }
               });
 
-              firestore()
-                .collection('matches')
-                .doc(matchData.matchId)
-                .update({
-                  playersUid: doc.data().playersUid.filter((val, index) => {
-                    if (index != tmpIndex) {
-                      return true;
-                    } else {
-                      return false;
-                    }
-                  }),
-                  playersName: doc._data.playersName.filter(
-                    (val, index) => index != tmpIndex,
-                  ),
-                })
-                .then(() => {
-                  navigation.dispatch(e.data.action);
-                });
+              await transaction.update(query, {
+                playersUid: doc.data().playersUid.filter((val, index) => {
+                  if (index != tmpIndex) {
+                    return true;
+                  } else {
+                    return false;
+                  }
+                }),
+                playersName: doc
+                  .data()
+                  .playersName.filter((val, index) => index != tmpIndex),
+              });
+            })
+            .then(() => {
+              navigation.dispatch(e.data.action);
             });
+
+          // firestore()
+          //   .collection('matches')
+          //   .doc(matchData.matchId)
+          //   .get()
+          //   .then(doc => {
+          //     let tmpIndex;
+          //     doc.data().playersUid.forEach((el, index) => {
+          //       console.log(el);
+          //       if (el == auth().currentUser.uid) {
+          //         tmpIndex = index;
+          //       }
+          //     });
+
+          //     firestore()
+          //       .collection('matches')
+          //       .doc(matchData.matchId)
+          //       .update({
+          //         playersUid: doc.data().playersUid.filter((val, index) => {
+          //           if (index != tmpIndex) {
+          //             return true;
+          //           } else {
+          //             return false;
+          //           }
+          //         }),
+          //         playersName: doc
+          //           .data()
+          //           .playersName.filter((val, index) => index != tmpIndex),
+          //       })
+          //       .then(() => {
+          //         navigation.dispatch(e.data.action);
+          //       });
+          //   });
         } else if (
           e.data.action.payload?.name == 'Search' &&
           e.data.action.type == 'REPLACE'
@@ -376,17 +467,37 @@ const ChatTab = () => {
         author: auth().currentUser.displayName,
         message: msg,
       };
-
+      con.setLoading(true);
       firestore()
-        .collection('matches')
-        .doc(matchData.matchId)
-        .update({
-          chat: [...con.chat, toSend],
+        .runTransaction(async transaction => {
+          const query = firestore()
+            .collection('matches')
+            .doc(matchData.matchId);
+
+          const doc = await transaction.get(query);
+
+          await transaction.update(query, {
+            chat: [...doc.data().chat, toSend],
+          });
+        })
+        .then(() => {
+          setMsg('');
+          con.setLoading(false);
         })
         .catch(error => {
           console.log(error);
+          con.setLoading(false);
         });
-      setMsg('');
+
+      // firestore()
+      //   .collection('matches')
+      //   .doc(matchData.matchId)
+      //   .update({
+      //     chat: [...con.chat, toSend],
+      //   })
+      //   .catch(error => {
+      //     console.log(error);
+      //   });
     }
   };
   return (
@@ -431,9 +542,9 @@ const ChatTab = () => {
           onChangeText={text => setMsg(text)}
           rightIcon={
             <Icon
-              name="sc-telegram"
-              type="evilicon"
-              iconStyle={{fontSize: 45}}
+              name="send"
+              type="material-community"
+              iconStyle={{fontSize: 30}}
               containerStyle={{borderRadius: 100}}
               onPress={() => {
                 sendMsg();

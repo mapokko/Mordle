@@ -32,7 +32,7 @@ const Tmp = ({navigation}) => {
       dispatch(clear());
       firestore()
         .collection('matches')
-        .doc('BqMTqgOdENHdT4pD43Ab')
+        .doc('UuO1cXxunK38m75QD9tT')
         .get()
         .then(doc => {
           dispatch(setId(doc.id));
@@ -53,7 +53,7 @@ const Tmp = ({navigation}) => {
       <Button
         title="nav"
         onPress={() => {
-          navigation.navigate('Playboard');
+          navigation.navigate('Ending');
         }}
       />
       <Text>Tmp</Text>
