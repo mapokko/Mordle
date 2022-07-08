@@ -271,28 +271,6 @@ const PlayBoardAlt = ({route, navigation}) => {
           //   e.data.action.payload?.name == 'Homepage' &&
           e.data.action.type == 'POP_TO_TOP'
         ) {
-          //   firestore()
-          //     .collection('challenges')
-          //     .doc(matchData.matchId)
-          //     .get()
-          //     .then(doc => {
-          //       const data = doc._data;
-          //       firestore()
-          //         .collection('matches')
-          //         .doc(matchData.matchId)
-          //         .update({
-          //           scores: {
-          //             ...data.scores,
-          //             [auth().currentUser.uid]: {
-          //               scored: matchData.scored,
-          //               status: 'abandon',
-          //             },
-          //           },
-          //         })
-          //         .then(() => {
-          //           navigation.dispatch(e.data.action);
-          //         });
-          //     });
           console.log('FAILING CHALLENGE');
 
           firestore()
@@ -311,19 +289,6 @@ const PlayBoardAlt = ({route, navigation}) => {
               console.log('problem');
               console.log(err);
             });
-
-          // firestore()
-          //   .collection('challenges')
-          //   .doc(challengeId)
-          //   .update({result: 'lose'})
-          //   .then(() => {
-          //     console.log('put to lose');
-          //     navigation.dispatch(e.data.action);
-          //   })
-          //   .catch(err => {
-          //     console.log('problem');
-          //     console.log(err);
-          //   });
         } else if (
           e.data.action.payload?.name == 'Challenge' &&
           e.data.action.type == 'REPLACE'
@@ -366,56 +331,6 @@ const PlayBoardAlt = ({route, navigation}) => {
     }, []),
   );
 
-  //   useFocusEffect(
-  //     React.useCallback(() => {
-  //       let timer;
-  //       if (showDialog == true) {
-  //         timer = setTimeout(() => {
-  //           nextWord();
-  //         }, 10000);
-  //       }
-  //       return () => {
-  //         clearTimeout(timer);
-  //       };
-  //     }, [showDialog]),
-  //   );
-
-  //   const nextWord = () => {
-  //     let status;
-  //     if (matchData.position == matchData.words.length) {
-  //       status = 'finish';
-  //     } else {
-  //       status = 'playing';
-  //     }
-  //     firestore()
-  //       .collection('matches')
-  //       .doc(matchData.matchId)
-  //       .get()
-  //       .then(doc => {
-  //         const data = doc._data;
-  //         firestore()
-  //           .collection('matches')
-  //           .doc(matchData.matchId)
-  //           .update({
-  //             scores: {
-  //               ...data.scores,
-  //               [auth().currentUser.uid]: {
-  //                 scored: matchData.scored,
-  //                 status: status,
-  //               },
-  //             },
-  //           });
-  //       });
-
-  //     if (status == 'playing') {
-  //       dispatch(next());
-  //       navigation.replace('Playboard');
-  //     } else {
-  //       navigation.replace('Ending');
-  //     }
-  //     setShowDialog(false);
-  //   };
-
   const endChallenge = () => {
     const result = dialogColor == 'green' ? 'win' : 'lose';
     firestore()
@@ -434,18 +349,6 @@ const PlayBoardAlt = ({route, navigation}) => {
       .finally(() => {
         navigation.replace('Challenge', {tab: 1});
       });
-
-    // firestore()
-    //   .collection('challenges')
-    //   .doc(challengeId)
-    //   .update({result: result})
-    //   .then(() => {
-    //     console.log('result updated');
-    //   })
-    //   .catch(err => {
-    //     console.log('result NOT update');
-    //     console.log(err);
-    //   });
   };
   return (
     <ImageBackground source={background} resizeMode="cover">

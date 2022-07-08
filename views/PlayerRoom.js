@@ -53,40 +53,6 @@ const PlayerRoom = ({route, navigation}) => {
           dispatch(setWords(doc.data().words));
           dispatch(setHost(doc.data().hostName));
           dispatch(setHostUid(doc.data().hostUid));
-          // firestore()
-          //   .collection('matches')
-          //   .doc(doc.id)
-          //   .update({
-          //     playersName: [
-          //       ...doc.data().playersName,
-          //       auth().currentUser.displayName,
-          //     ],
-          //     playersUid: [...doc.data().playersUid, auth().currentUser.uid],
-          //     chat: [
-          //       ...doc.data().chat,
-          //       {
-          //         author: 'Mordle',
-          //         message: `${
-          //           auth().currentUser.displayName
-          //         } si e' unito alla partita!`,
-          //       },
-          //     ],
-          //   });
-
-          // firestore()
-          //   .collection('matches')
-          //   .doc(doc.id)
-          //   .update({
-          //     chat: [
-          //       ...doc.data().chat,
-          //       {
-          //         author: 'Mordle',
-          //         message: `${
-          //           auth().currentUser.displayName
-          //         } si e' unito alla partita!`,
-          //       },
-          //     ],
-          //   });
         })
         .catch(err => {
           console.log('ERR IN FETCH INIT DATA PLAYERROOM');
@@ -160,23 +126,6 @@ const PlayerRoom = ({route, navigation}) => {
                     .finally(() => {
                       setLoading(false);
                     });
-
-                  // firestore()
-                  //   .collection('matches')
-                  //   .doc(matchData.matchId)
-                  //   .update({
-                  //     scores: {
-                  //       ...data.scores,
-                  //       [auth().currentUser.uid]: {
-                  //         scored: 0,
-                  //         status: 'playing',
-                  //         time: 0,
-                  //       },
-                  //     },
-                  //   })
-                  //   .then(() => {
-                  //     navigation.navigate('Playboard');
-                  //   });
                 }
               }
             }
@@ -234,39 +183,6 @@ const PlayerRoom = ({route, navigation}) => {
             .then(() => {
               navigation.dispatch(e.data.action);
             });
-
-          // firestore()
-          //   .collection('matches')
-          //   .doc(matchData.matchId)
-          //   .get()
-          //   .then(doc => {
-          //     let tmpIndex;
-          //     doc.data().playersUid.forEach((el, index) => {
-          //       console.log(el);
-          //       if (el == auth().currentUser.uid) {
-          //         tmpIndex = index;
-          //       }
-          //     });
-
-          //     firestore()
-          //       .collection('matches')
-          //       .doc(matchData.matchId)
-          //       .update({
-          //         playersUid: doc.data().playersUid.filter((val, index) => {
-          //           if (index != tmpIndex) {
-          //             return true;
-          //           } else {
-          //             return false;
-          //           }
-          //         }),
-          //         playersName: doc
-          //           .data()
-          //           .playersName.filter((val, index) => index != tmpIndex),
-          //       })
-          //       .then(() => {
-          //         navigation.dispatch(e.data.action);
-          //       });
-          //   });
         } else if (
           e.data.action.payload?.name == 'Search' &&
           e.data.action.type == 'REPLACE'
@@ -488,16 +404,6 @@ const ChatTab = () => {
           console.log(error);
           con.setLoading(false);
         });
-
-      // firestore()
-      //   .collection('matches')
-      //   .doc(matchData.matchId)
-      //   .update({
-      //     chat: [...con.chat, toSend],
-      //   })
-      //   .catch(error => {
-      //     console.log(error);
-      //   });
     }
   };
   return (

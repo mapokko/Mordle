@@ -116,13 +116,6 @@ const Ending = ({route, navigation}) => {
     }, [finalScore, scores]),
   );
 
-  // useFocusEffect(
-  //   React.useCallback(() => {
-  //     if (flag == false && scores.length == data.scores.length)
-  //       uploadPodium(scores);
-  //   }, [flag, scores]),
-  // );
-
   const uploadPodium = data => {
     let realScores = [];
 

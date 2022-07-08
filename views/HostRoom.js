@@ -153,18 +153,6 @@ const HostRoom = ({route, navigation}) => {
             .catch(err => {
               console.log(err);
             });
-
-          // firestore()
-          //   .collection('matches')
-          //   .doc(matchData.matchId)
-          //   .update({canc: true, wait: false, play: false})
-          //   .then(() => {
-          //     dispatch(clear());
-          //     navigation.dispatch(e.data.action);
-          //   })
-          //   .catch(err => {
-          //     console.log(err);
-          //   });
         } else if (
           e.data.action.payload?.name == 'Playerboard' &&
           e.data.action.type == 'NAVIGATE'

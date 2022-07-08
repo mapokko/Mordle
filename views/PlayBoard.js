@@ -301,30 +301,6 @@ const PlayBoard = ({route, navigation}) => {
               console.log('FAILED TO UPDATE MATCH WHILE ABANDONING');
               console.log(err);
             });
-
-          // firestore()
-          //   .collection('matches')
-          //   .doc(matchData.matchId)
-          //   .get()
-          //   .then(doc => {
-          //     const data = doc._data;
-          //     firestore()
-          //       .collection('matches')
-          //       .doc(matchData.matchId)
-          //       .update({
-          //         scores: {
-          //           ...data.scores,
-          //           [auth().currentUser.uid]: {
-          //             scored: matchData.scored,
-          //             status: 'abandon',
-          //             time: matchData.time,
-          //           },
-          //         },
-          //       })
-          //       .then(() => {
-          //         navigation.dispatch(e.data.action);
-          //       });
-          //   });
         } else if (
           e.data.action.payload?.name == 'Playboard' &&
           e.data.action.type == 'REPLACE'
@@ -404,27 +380,6 @@ const PlayBoard = ({route, navigation}) => {
         },
       });
     });
-
-    // firestore()
-    //   .collection('matches')
-    //   .doc(matchData.matchId)
-    //   .get()
-    //   .then(doc => {
-    //     const data = doc._data;
-    //     firestore()
-    //       .collection('matches')
-    //       .doc(matchData.matchId)
-    //       .update({
-    //         scores: {
-    //           ...data.scores,
-    //           [auth().currentUser.uid]: {
-    //             scored: matchData.scored,
-    //             status: status,
-    //             time: matchData.time,
-    //           },
-    //         },
-    //       });
-    //   });
 
     if (status == 'playing') {
       dispatch(next());
