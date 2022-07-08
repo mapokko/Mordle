@@ -684,8 +684,6 @@ const LetterInput = ({lett, trigger, color}) => {
   );
 };
 
-const letterStyle = StyleSheet.create({});
-
 const alphArr = [
   ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
   ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
