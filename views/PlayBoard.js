@@ -30,6 +30,7 @@ import back2 from '../helper/playBack2.png';
 import back3 from '../helper/playBack3.png';
 import back4 from '../helper/playBack4.png';
 import back5 from '../helper/playBack5.png';
+import back6 from '../helper/playBack6.png';
 
 const initState = {
   first: '',
@@ -231,7 +232,8 @@ const PlayBoard = ({route, navigation}) => {
   useFocusEffect(
     React.useCallback(() => {
       dispatchLocal({type: 'init', payload: word});
-      switch (Math.floor(Math.random() * 5)) {
+
+      switch (Math.floor(Math.random() * 6)) {
         case 0:
           setBackground(back1);
           break;
@@ -246,6 +248,9 @@ const PlayBoard = ({route, navigation}) => {
           break;
         case 4:
           setBackground(back5);
+          break;
+        case 5:
+          setBackground(back6);
           break;
       }
     }, []),
