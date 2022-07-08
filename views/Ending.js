@@ -46,9 +46,8 @@ const Ending = ({route, navigation}) => {
                   setFinalScore(() => {
                     return data.scores[auth().currentUser.uid];
                   });
-                  if (data.hostUid == auth().currentUser.uid) {
-                    uploadPodium(data.scores);
-                  }
+
+                  uploadPodium(data);
                   // prepResult(data.scores);
                 }
               }
@@ -124,7 +123,25 @@ const Ending = ({route, navigation}) => {
   //   }, [flag, scores]),
   // );
 
-  const uploadPodium = realScores => {
+  const uploadPodium = data => {
+    let realScores = [];
+
+    if (data.finish == false && data.play == true) {
+      firestore().runTransaction(async t => {
+        const query = firestore().collection('matches').doc(matchData.matchId);
+
+        await t.update(query, {
+          finish: true,
+          play: false,
+        });
+      });
+    }
+
+    if (Object.hasOwnProperty('podium')) {
+      return;
+    } else {
+      realScores = data.scores;
+    }
     let finalPodium = [];
     const sorted = Object.entries(realScores).sort(
       (a, b) => b[1].scored - a[1].scored,

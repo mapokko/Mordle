@@ -45,32 +45,11 @@ const App = () => {
     uid: '',
   });
   const data = {userData, setUserData};
-  // const DevicesContextValue = React.useMemo(() => ({ userData, setUserData}), [userData]);
 
   const navigationRef = useRef();
 
   useEffect(() => {
-    // notifee.createChannel({
-    //   id: 'mordleHigh',
-    //   name: 'mordle channel high priority',
-    //   lights: true,
-    //   vibration: true,
-    //   badge: false,
-    //   importance: AndroidImportance.HIGH,
-    // });
-
-    // notifee.createChannel({
-    //   id: 'mordleDef',
-    //   name: 'mordle channel low priority',
-    //   lights: true,
-    //   vibration: true,
-    //   badge: false,
-    //   importance: AndroidImportance.DEFAULT,
-    // });
     console.log('listening for messages');
-    // const unsubscribe = messaging().onMessage(async remoteMessage => {
-    //   console.log('message received!!');
-    // });
 
     messaging().onNotificationOpenedApp(remoteMessage => {
       handleNotification(remoteMessage);

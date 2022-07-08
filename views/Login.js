@@ -1,4 +1,10 @@
-import {View, ScrollView, StyleSheet, ToastAndroid} from 'react-native';
+import {
+  View,
+  ScrollView,
+  StyleSheet,
+  ToastAndroid,
+  Keyboard,
+} from 'react-native';
 import React, {useState, useRef, useContext, useEffect} from 'react';
 
 import {Text} from '@rneui/themed';
@@ -171,6 +177,7 @@ const Login = ({navigation}) => {
         color="success"
         title="LOG IN"
         onPress={() => {
+          Keyboard.dismiss();
           checkData();
         }}
       />

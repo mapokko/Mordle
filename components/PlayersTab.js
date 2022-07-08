@@ -123,7 +123,6 @@ const PlayersTab = ({RoomContext}) => {
                             ),
                           })
                           .then(() => {
-                            con.setLoading(false);
                             ToastAndroid.show(
                               'Richiesta mandata con successo!',
                               ToastAndroid.SHORT,
@@ -132,11 +131,17 @@ const PlayersTab = ({RoomContext}) => {
                           .catch(err => {
                             console.log('IN UPDATE');
                             console.log(err);
+                          })
+                          .finally(() => {
+                            con.setLoading(false);
                           });
                       })
                       .catch(err => {
                         console.log('IN FECTH');
                         console.log(err);
+                      })
+                      .finally(() => {
+                        con.setLoading(false);
                       });
                   }}
                 />

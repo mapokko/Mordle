@@ -1,27 +1,16 @@
 import {View, Text, ImageBackground, StyleSheet, Image} from 'react-native';
 import React, {useState, useEffect, useContext, createContext} from 'react';
 
-import {Button, fonts} from '@rneui/base';
+import {Button} from '@rneui/base';
 import {Text as TextE} from '@rneui/themed';
-import {Overlay, Dialog} from '@rneui/themed';
-import {Badge} from '@rneui/themed';
+import {Overlay, Dialog, ListItem, Badge} from '@rneui/themed';
 
-import {Dropdown} from 'react-native-element-dropdown';
+import {Select, Box, Input, CheckIcon} from 'native-base';
 
-import {Select, Box, Input} from 'native-base';
-import {CheckIcon} from 'native-base';
-
-import auth, {firebase} from '@react-native-firebase/auth';
+import auth from '@react-native-firebase/auth';
 import messaging from '@react-native-firebase/messaging';
 import firestore from '@react-native-firebase/firestore';
-import {StackActions, useFocusEffect} from '@react-navigation/native';
-
-import {
-  onDisplayNotification,
-  handleNotification,
-} from '../helper/notificationHandler';
-
-import notifee, {EventType, AndroidImportance} from '@notifee/react-native';
+import {useFocusEffect} from '@react-navigation/native';
 
 import {useSelector, useDispatch} from 'react-redux';
 import {
@@ -35,11 +24,13 @@ import {
 import pp from '../helper/tile4.png';
 
 import {UserContext} from '../App';
+import TutorialDialog from './TutorialDialog';
 
 const Home = ({navigation}) => {
   const userData = useSelector(state => state.user);
   const dispatch = useDispatch();
   const [showOverlay, setShowOverlay] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
 
   const [initializing, setInitializing] = useState(true);
   const [user, setUser] = useState();
@@ -73,6 +64,7 @@ const Home = ({navigation}) => {
         .where('uid', '==', auth().currentUser.uid)
         .get()
         .then(qs => {
+          setUser(qs.docs[0]);
           setReqsNum(qs.docs[0].data().friendRequests.length);
         })
         .catch(err => {
@@ -127,7 +119,6 @@ const Home = ({navigation}) => {
           .then(token => {
             dispatch(setToken(token));
             updateToken(token);
-            console.log(token);
           });
 
         return messaging().onTokenRefresh(token => {
@@ -221,6 +212,11 @@ const Home = ({navigation}) => {
             }}>
             <Dialog.Loading />
           </Dialog>
+
+          <TutorialDialog
+            showTutorial={showTutorial}
+            setShowTutorial={setShowTutorial}
+          />
 
           <Image
             source={require('../helper/title2C.png')}
@@ -345,13 +341,15 @@ const Home = ({navigation}) => {
               }}
               onPress={() => {
                 navigation.navigate('Statistics', {
-                  uid: auth().currentUser.uid,
+                  realUid: user.id,
+                  uid: user.data().uid,
+                  username: auth().currentUser.displayName,
                 });
               }}
             />
 
             <Button
-              title="TUTORIAL"
+              title="INFO"
               buttonStyle={[styles.buttonStyle, {backgroundColor: '#26a69a'}]}
               titleStyle={styles.titleStyle}
               containerStyle={styles.buttonContainerStyle}
@@ -362,7 +360,7 @@ const Home = ({navigation}) => {
                 color: 'white',
               }}
               onPress={() => {
-                navigation.navigate('Statistics');
+                setShowTutorial(true);
               }}
             />
 

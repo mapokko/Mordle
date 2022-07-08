@@ -1,5 +1,5 @@
 import {View, ScrollView, Keyboard, ToastAndroid} from 'react-native';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
 
@@ -15,21 +15,91 @@ import Loading from '../components/Loading';
 const Statistics = ({route}) => {
   const [matches, setMatches] = useState({});
   const [user, setUser] = useState();
-  const [username, setUsername] = useState(auth().currentUser.displayName);
+  const [username, setUsername] = useState(route.params.username);
   const [editUsername, setEditUsername] = useState(false);
+
   const [loading, setLoading] = useState(false);
+  const [loading2, setLoading2] = useState(false);
+
+  const [firstCount, setFirstCount] = useState(0);
+  const [created, setCreated] = useState(0);
+  const [played, setPlayed] = useState(0);
+  const [abandoned, setAbandoned] = useState(0);
+
+  const [winChall, setWinChall] = useState(0);
+  const [loseChall, setLoseChall] = useState(0);
+  const [receivedChall, setReceivedChall] = useState(0);
+  const [sentChall, setSentChall] = useState(0);
 
   useFocusEffect(
     React.useCallback(() => {
+      setLoading2(true);
+      const prom1 = firestore()
+        .collection('challenges')
+        .where('from', '==', route.params.realUid)
+        .get()
+        .then(qs2 => {
+          setSentChall(qs2.docs.length);
+        });
+
+      const prom2 = firestore()
+        .collection('challenges')
+        .where('to', '==', route.params.realUid)
+        .get()
+        .then(qs2 => {
+          setReceivedChall(qs2.docs.length);
+          let winCount = 0;
+          let loseCount = 0;
+          for (let i = 0; i < qs2.docs.length; i++) {
+            if (qs2.docs[i].data().result == 'win') {
+              winCount++;
+            } else if (qs2.docs[i].data().result == 'lose') {
+              loseCount++;
+            }
+          }
+
+          setWinChall(winCount);
+          setLoseChall(loseCount);
+
+          Promise.all([prom1, prom2]).then(() => {
+            setLoading2(false);
+          });
+        });
+    }, []),
+  );
+
+  useFocusEffect(
+    React.useCallback(() => {
+      console.log(route.params.uid);
+
       setLoading(true);
       const prom1 = firestore()
         .collection('matches')
+        .where('canc', '==', false)
+        .where('play', '==', false)
+        .where('finish', '==', true)
         .where('playersUid', 'array-contains', route.params.uid)
         .get()
-        .then(query => {
-          setMatches(query.docs);
+        .then(qs => {
+          let tmp = [];
+          let createdCount = 0;
+          let abandonCount = 0;
+          for (let i = 0; i < qs.docs.length; i++) {
+            const status = qs.docs[i].data().scores[route.params.uid].status;
+            if (status == 'finish') {
+              tmp.push(qs.docs[i]);
+            } else if (status == 'abandon') {
+              abandonCount++;
+            }
+            if (qs.docs[i].data().hostUid == route.params.uid) {
+              createdCount++;
+            }
+          }
+          setPlayed(tmp.length);
+          setAbandoned(abandonCount);
+          setCreated(createdCount);
+          setupData(tmp);
         });
-
       const prom2 = firestore()
         .collection('users')
         .where('uid', '==', route.params.uid)
@@ -37,13 +107,25 @@ const Statistics = ({route}) => {
         .then(qs => {
           setUser(qs.docs[0]);
         });
-
       Promise.all([prom1, prom2]).then(() => {
         setLoading(false);
-        console.log(matches);
+        // console.log(matches.docs);
       });
     }, []),
   );
+
+  const setupData = matches => {
+    let first = 0;
+    const uid = route.params.uid;
+    for (let i = 0; i < matches.length; i++) {
+      let podium = matches[i].data().podium;
+      if (podium.indexOf(uid) == 0) {
+        first++;
+      }
+    }
+
+    setFirstCount(first);
+  };
 
   const updateUsername = async newName => {
     try {
@@ -68,86 +150,12 @@ const Statistics = ({route}) => {
         console.log(err);
       });
 
-    // await firestore()
-    //   .collection('users')
-    //   .doc(user.id)
-    //   .update({username: newName, usernameLower: newName.toLowerCase()})
-    //   .catch(err => {
-    //     ToastAndroid.show('Nome non aggiornato..', ToastAndroid.LONG);
-    //     console.log(err);
-    //   });
-
     setUsername(auth().currentUser.displayName);
   };
 
-  const getNumMatches = position => {
-    const sorted = Object.entries(scores).sort(
-      (a, b) => b[1].scored - a[1].scored,
-    );
-    let betterScore = 0;
-    let lowerScore = 0;
-    sorted.find((val, index) => {
-      if (val[1].scored == finalScore.scored) {
-        betterScore = index;
-        return true;
-      } else {
-        return false;
-      }
-    });
-
-    sorted.find((val, index) => {
-      if (val[1].scored < finalScore.scored) {
-        lowerScore = sorted.length - index;
-        return true;
-      } else {
-        return false;
-      }
-    });
-
-    let filtered = sorted.filter((val, index) => {
-      if (val[1].scored == finalScore.scored) {
-        return true;
-      } else {
-        return false;
-      }
-    });
-
-    filtered = filtered.sort((a, b) => a[1].time - b[1].time);
-    let finalIndex;
-    filtered.find((val, index) => {
-      if (val[0] == auth().currentUser.uid) {
-        finalIndex = index;
-        return true;
-      } else {
-        return false;
-      }
-    });
-    betterScore = betterScore + finalIndex;
-    lowerScore = lowerScore + filtered.length - finalIndex - 1;
-  };
-
   return (
-    <ScrollView
-      contentContainerStyle={{
-        paddingTop: '5%',
-        // display: 'flex',
-        // alignItems: 'center',
-      }}
-      keyboardShouldPersistTaps="always">
-      <Button
-        onPress={() => {
-          console.log(matches.length);
-        }}
-      />
-      <Loading loading={loading} />
-      <Text
-        h2
-        h2Style={{
-          textAlign: 'center',
-          textDecorationLine: 'underline',
-        }}>
-        Profilo
-      </Text>
+    <ScrollView keyboardShouldPersistTaps="always">
+      <Loading loading={loading || loading2} />
       <View style={{marginTop: '5%', paddingHorizontal: '3%'}}>
         <Text h4>Dati</Text>
         <View
@@ -163,35 +171,39 @@ const Statistics = ({route}) => {
             label="Nome utente"
             labelStyle={{color: 'black'}}
             rightIcon={
-              editUsername ? (
-                <Icon
-                  iconStyle={{borderRadius: 20}}
-                  name="content-save"
-                  type="material-community"
-                  color="#000000"
-                  size={30}
-                  onPress={() => {
-                    Keyboard.dismiss();
-                    setLoading(true);
-                    const prom = updateUsername(username);
+              route.params.uid == auth().currentUser.uid ? (
+                editUsername ? (
+                  <Icon
+                    iconStyle={{borderRadius: 20}}
+                    name="content-save"
+                    type="material-community"
+                    color="#000000"
+                    size={30}
+                    onPress={() => {
+                      Keyboard.dismiss();
+                      setLoading(true);
+                      const prom = updateUsername(username);
 
-                    Promise.all([prom]).then(() => {
-                      setEditUsername(false);
-                      setLoading(false);
-                    });
-                  }}
-                />
+                      Promise.all([prom]).then(() => {
+                        setEditUsername(false);
+                        setLoading(false);
+                      });
+                    }}
+                  />
+                ) : (
+                  <Icon
+                    iconStyle={{borderRadius: 20}}
+                    name="pencil"
+                    type="material-community"
+                    color="#848b92"
+                    size={30}
+                    onPress={() => {
+                      setEditUsername(true);
+                    }}
+                  />
+                )
               ) : (
-                <Icon
-                  iconStyle={{borderRadius: 20}}
-                  name="pencil"
-                  type="material-community"
-                  color="#848b92"
-                  size={30}
-                  onPress={() => {
-                    setEditUsername(true);
-                  }}
-                />
+                <></>
               )
             }
             onChangeText={txt => {
@@ -206,35 +218,85 @@ const Statistics = ({route}) => {
             label="E-mail utente"
             labelStyle={{color: 'black'}}
           />
-          <View style={{paddingHorizontal: '2%'}}>
-            <Text h4 h4Style={{fontSize: 16}}>
-              Data creazione
-            </Text>
-            <Text style={{fontSize: 22, paddingHorizontal: '2%'}}>
-              {auth().currentUser.metadata.creationTime.split('T')[0]}
-            </Text>
-          </View>
+          {route.params.uid == auth().currentUser.uid ? (
+            <View style={{paddingHorizontal: '2%'}}>
+              <Text h4 h4Style={{fontSize: 16}}>
+                Data creazione
+              </Text>
+              <Text style={{fontSize: 22, paddingHorizontal: '2%'}}>
+                {auth().currentUser.metadata.creationTime.split('T')[0]}
+              </Text>
+            </View>
+          ) : (
+            <></>
+          )}
         </View>
       </View>
       <View style={{marginTop: '5%', paddingHorizontal: '3%'}}>
         <Text h4>Partite</Text>
-        <View style={{paddingHorizontal: '2%', marginVertical: '3%'}}>
+        <View style={{paddingHorizontal: '2%', marginVertical: '1%'}}>
           <Text h4 h4Style={{fontSize: 16}}>
             Partite vinte
           </Text>
-          <Text style={{fontSize: 22, paddingHorizontal: '2%'}}>10</Text>
-        </View>
-        <View style={{paddingHorizontal: '2%', marginVertical: '3%'}}>
-          <Text h4 h4Style={{fontSize: 16}}>
-            Partite arrivato secondo
+          <Text style={{fontSize: 22, paddingHorizontal: '2%'}}>
+            {firstCount}
           </Text>
-          <Text style={{fontSize: 22, paddingHorizontal: '2%'}}>10</Text>
         </View>
-        <View style={{paddingHorizontal: '2%', marginVertical: '3%'}}>
+        <View style={{paddingHorizontal: '2%', marginVertical: '1%'}}>
           <Text h4 h4Style={{fontSize: 16}}>
-            Partite arrivato terzo
+            Partite create
           </Text>
-          <Text style={{fontSize: 22, paddingHorizontal: '2%'}}>10</Text>
+          <Text style={{fontSize: 22, paddingHorizontal: '2%'}}>{created}</Text>
+        </View>
+        <View style={{paddingHorizontal: '2%', marginVertical: '1%'}}>
+          <Text h4 h4Style={{fontSize: 16}}>
+            Partite giocate
+          </Text>
+          <Text style={{fontSize: 22, paddingHorizontal: '2%'}}>{played}</Text>
+        </View>
+        <View style={{paddingHorizontal: '2%', marginVertical: '1%'}}>
+          <Text h4 h4Style={{fontSize: 16}}>
+            Partite abbandonate
+          </Text>
+          <Text style={{fontSize: 22, paddingHorizontal: '2%'}}>
+            {abandoned}
+          </Text>
+        </View>
+      </View>
+
+      <View style={{marginTop: '5%', paddingHorizontal: '3%'}}>
+        <Text h4>Sfide</Text>
+        <View style={{paddingHorizontal: '2%', marginVertical: '1%'}}>
+          <Text h4 h4Style={{fontSize: 16}}>
+            Sfide vinte
+          </Text>
+          <Text style={{fontSize: 22, paddingHorizontal: '2%'}}>
+            {winChall}
+          </Text>
+        </View>
+        <View style={{paddingHorizontal: '2%', marginVertical: '1%'}}>
+          <Text h4 h4Style={{fontSize: 16}}>
+            Sfide perse
+          </Text>
+          <Text style={{fontSize: 22, paddingHorizontal: '2%'}}>
+            {loseChall}
+          </Text>
+        </View>
+        <View style={{paddingHorizontal: '2%', marginVertical: '1%'}}>
+          <Text h4 h4Style={{fontSize: 16}}>
+            Sfide ricevute
+          </Text>
+          <Text style={{fontSize: 22, paddingHorizontal: '2%'}}>
+            {receivedChall}
+          </Text>
+        </View>
+        <View style={{paddingHorizontal: '2%', marginVertical: '1%'}}>
+          <Text h4 h4Style={{fontSize: 16}}>
+            Sfide lanciate
+          </Text>
+          <Text style={{fontSize: 22, paddingHorizontal: '2%'}}>
+            {sentChall}
+          </Text>
         </View>
       </View>
     </ScrollView>

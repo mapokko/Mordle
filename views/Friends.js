@@ -14,12 +14,12 @@ import Loading from '../components/Loading';
 
 const LoadingContext = createContext();
 
-const Friends = ({route}) => {
+const Friends = ({route, navigation}) => {
   const [index, setIndex] = useState(route.params.tab);
   const [loading, setLoading] = useState(false);
   const [friends, setFriends] = useState([]);
   const [friendReqs, setFriendReqs] = useState([]);
-  const con = {setLoading, friends, friendReqs, setIndex};
+  const con = {setLoading, friends, friendReqs, setIndex, navigation};
 
   useFocusEffect(
     React.useCallback(() => {
@@ -27,12 +27,14 @@ const Friends = ({route}) => {
         .collection('users')
         .where('uid', '==', auth().currentUser.uid)
         .onSnapshot(qs => {
+          console.log('doing');
           setFriends(qs.docs[0].data().friends);
           setFriendReqs(qs.docs[0].data().friendRequests);
         });
       return () => {
-        setFriends([]);
-        setFriendReqs([]);
+        // setFriends([]);
+        // setFriendReqs([]);
+        console.log('removiing');
         subscribe();
       };
     }, []),
@@ -270,7 +272,11 @@ const PlayerSearchTab = () => {
                   bgColor="#669036"
                   mt="2"
                   onPress={() => {
-                    console.log('go to PROFILO');
+                    con.navigation.navigate('Statistics', {
+                      realUid: value.id,
+                      uid: value.data().uid,
+                      username: value.data().username,
+                    });
                   }}>
                   PROFILO
                 </Button>
@@ -289,6 +295,7 @@ const FriendsTab = () => {
 
   useFocusEffect(
     React.useCallback(() => {
+      con.setLoading(true);
       setFriendsData([]);
       const tmp = [];
       const promises = [];
@@ -298,19 +305,18 @@ const FriendsTab = () => {
           .where('uid', '==', con.friends[i])
           .get()
           .then(qs => {
-            tmp.push(qs.docs[0].data());
+            tmp.push(qs.docs[0]);
             // setFriendsData(prev => {
             //   return [...prev, qs.docs[0].data()];
             // });
           });
+        promises.push(prom);
       }
       Promise.all(promises).then(() => {
         setFriendsData(tmp);
+        con.setLoading(false);
       });
       //   setFriendsData(newData);
-      return () => {
-        setFriendsData([]);
-      };
     }, [con.friends]),
   );
 
@@ -329,8 +335,10 @@ const FriendsTab = () => {
               justifyContent: 'space-between',
             }}>
             <View>
-              <Text h4>{value.username}</Text>
-              <Text style={{color: '#242424', fontSize: 13}}>{value.uid}</Text>
+              <Text h4>{value.data().username}</Text>
+              <Text style={{color: '#242424', fontSize: 13}}>
+                {value.data().uid}
+              </Text>
             </View>
             <View
               style={{
@@ -345,7 +353,11 @@ const FriendsTab = () => {
                 bgColor="#669036"
                 mt="2"
                 onPress={() => {
-                  console.log('go to PROFILO');
+                  con.navigation.navigate('Statistics', {
+                    realUid: value.id,
+                    uid: value.data().uid,
+                    username: value.data().username,
+                  });
                 }}>
                 PROFILO
               </Button>
