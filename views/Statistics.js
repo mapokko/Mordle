@@ -118,9 +118,11 @@ const Statistics = ({route}) => {
     let first = 0;
     const uid = route.params.uid;
     for (let i = 0; i < matches.length; i++) {
-      let podium = matches[i].data().podium;
-      if (podium.indexOf(uid) == 0) {
-        first++;
+      if (matches[i].data().hasOwnProperty('podium')) {
+        let podium = matches[i].data().podium;
+        if (podium.indexOf(uid) == 0) {
+          first++;
+        }
       }
     }
 
