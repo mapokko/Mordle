@@ -181,14 +181,6 @@ const SearchMatch = ({navigation}) => {
             <Card key={index} containerStyle={{padding: 0}}>
               <TouchableOpacity
                 onPress={() => {
-                  // if (value._data.playerNum > value._data.playersUid.length) {
-                  //   navigation.replace('Playerroom', {
-                  //     id: value.id,
-                  //     pNum: value._data.playerNum,
-                  //     wNum: value._data.words[0].length,
-                  //     wLen: value._data.words.length,
-                  //   });
-                  // }
                   if (value.data().password != '') {
                     setMatchIndex(index);
                     setShowPwdDialog(true);

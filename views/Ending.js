@@ -22,6 +22,7 @@ const Ending = ({route, navigation}) => {
   const [toggleLoading, setToggleLoading] = useState(true);
   const [better, setBetter] = useState(0);
   const [worse, setWorse] = useState(0);
+  const [podiumData, setPodiumData] = useState([]);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -111,8 +112,6 @@ const Ending = ({route, navigation}) => {
 
       setBetter(betterScore);
       setWorse(lowerScore);
-
-      setToggleLoading(false);
     }, [finalScore, scores]),
   );
 
@@ -130,7 +129,8 @@ const Ending = ({route, navigation}) => {
       });
     }
 
-    if (Object.hasOwnProperty('podium')) {
+    if (data.hasOwnProperty('podium')) {
+      handlePodiumData(data.podium);
       return;
     } else {
       realScores = data.scores;
@@ -177,6 +177,31 @@ const Ending = ({route, navigation}) => {
         console.log('PODIUM UPLOAD FAILED');
         console.log(err);
       });
+
+    handlePodiumData(finalPodium);
+  };
+
+  const handlePodiumData = podium => {
+    setPodiumData([]);
+    const promises = [];
+    const tmp = [];
+    for (let i = 0; i < podium.length; i++) {
+      const prom = firestore()
+        .collection('users')
+        .where('uid', '==', podium[i])
+        .get()
+        .then(qs => {
+          tmp.push(qs.docs[0]);
+          // setFriendsData(prev => {
+          //   return [...prev, qs.docs[0]];
+          // });
+        });
+      promises.push(prom);
+    }
+    Promise.all(promises).then(() => {
+      setPodiumData(tmp);
+      setToggleLoading(false);
+    });
   };
 
   useFocusEffect(
@@ -218,24 +243,40 @@ const Ending = ({route, navigation}) => {
           Attendo gli altri giocatori...
         </Text>
       </Dialog>
+      <Button
+        title="some"
+        onPress={() => {
+          console.log(podiumData);
+        }}
+      />
       {!toggleLoading && (
         <>
           <Text style={{marginBottom: '5%'}} h1>
-            Sei arrivato {better + 1}°
+            Sei arrivato {better + 1}°!
           </Text>
-          {worse > 0 ? (
-            <>
-              <Text style={{color: '#222222', fontSize: 20}}>
-                Hai battuto {worse} giocator{worse > 1 ? 'i' : 'e'}!
-              </Text>
-            </>
-          ) : (
-            <></>
-          )}
-          <Text style={{color: '#222222', fontSize: 20, marginTop: '2%'}}>
-            Hai indovinato {finalScore?.scored} parole in {finalScore.time}{' '}
-            secondi!
-          </Text>
+          <View
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              marginBottom: '2%',
+            }}>
+            {podiumData.map((value, index) => {
+              return (
+                <>
+                  <View key={index} style={{marginVertical: '2%'}}>
+                    <Text h4>
+                      {index + 1}° {value.data().username}
+                    </Text>
+                    <Text style={{fontWeight: 'bold', fontSize: 17}}>
+                      Indovinato {scores[value.data().uid].scored} parole in{' '}
+                      {scores[value.data().uid].time} secondi
+                    </Text>
+                  </View>
+                </>
+              );
+            })}
+          </View>
+
           <Button
             title="TORNA ALLA HOMEPAGE"
             buttonStyle={{

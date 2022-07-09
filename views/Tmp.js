@@ -32,7 +32,7 @@ const Tmp = ({navigation}) => {
       dispatch(clear());
       firestore()
         .collection('matches')
-        .doc('UuO1cXxunK38m75QD9tT')
+        .doc('24zA1H5bj8LvzVHgt6G2')
         .get()
         .then(doc => {
           dispatch(setId(doc.id));
