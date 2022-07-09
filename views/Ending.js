@@ -243,12 +243,6 @@ const Ending = ({route, navigation}) => {
           Attendo gli altri giocatori...
         </Text>
       </Dialog>
-      <Button
-        title="some"
-        onPress={() => {
-          console.log(podiumData);
-        }}
-      />
       {!toggleLoading && (
         <>
           <Text style={{marginBottom: '5%'}} h1>
