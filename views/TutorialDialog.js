@@ -35,7 +35,7 @@ const TutorialDialog = ({showTutorial, setShowTutorial}) => {
 
           <Text
             style={{fontSize: 17, marginVertical: '4%', textAlign: 'justify'}}>
-            Mordle e' ti permette di giocare e sfidare Online i tuoi amici a
+            Mordle ti permette di giocare e sfidare Online i tuoi amici a
             indovinare delle parole attraverso il classico gioco 'Wordle'.
           </Text>
           <Text style={{fontSize: 17, marginBottom: '4%'}}>
