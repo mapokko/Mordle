@@ -47,8 +47,13 @@ const Ending = ({route, navigation}) => {
                   setFinalScore(() => {
                     return data.scores[auth().currentUser.uid];
                   });
-
-                  uploadPodium(data);
+                  if (auth().currentUser.uid == data.hostUid) {
+                    uploadPodium(data);
+                  } else if (data.scores[data.hostUid].status == 'abandon') {
+                    uploadPodium(data);
+                  } else if (data.hasOwnProperty('podium')) {
+                    handlePodiumData(data.podium);
+                  }
                   // prepResult(data.scores);
                 }
               }
@@ -122,10 +127,14 @@ const Ending = ({route, navigation}) => {
       firestore().runTransaction(async t => {
         const query = firestore().collection('matches').doc(matchData.matchId);
 
-        await t.update(query, {
-          finish: true,
-          play: false,
-        });
+        const doc = await t.get(query);
+
+        if (data.finish == false && data.play == true) {
+          await t.update(query, {
+            finish: true,
+            play: false,
+          });
+        }
       });
     }
 
@@ -169,9 +178,13 @@ const Ending = ({route, navigation}) => {
       .runTransaction(async t => {
         const query = firestore().collection('matches').doc(matchData.matchId);
 
-        await t.update(query, {
-          podium: finalPodium,
-        });
+        const doc = await t.get(query);
+
+        if (!data.hasOwnProperty('podium')) {
+          await t.update(query, {
+            podium: finalPodium,
+          });
+        }
       })
       .catch(err => {
         console.log('PODIUM UPLOAD FAILED');
