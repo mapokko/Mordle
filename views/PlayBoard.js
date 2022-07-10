@@ -724,8 +724,8 @@ const Keyboard = () => {
                 display: 'flex',
                 flexDirection: 'row',
                 justifyContent: 'center',
-                width: '100%',
-                marginBottom: 5,
+                // width: '100%',
+                marginBottom: '1%',
               }}>
               {val.map((l, i) => {
                 return <Letter l={l} key={i} />;
@@ -774,12 +774,12 @@ const Letter = ({l}) => {
     <Text
       style={{
         fontSize: 27,
-        marginHorizontal: 3,
+        marginHorizontal: '0.5%',
         color: 'black',
-        padding: 5,
+        padding: '1%',
         borderWidth: 1,
         borderRadius: 5,
-        width: 35,
+        width: '9%',
         textAlign: 'center',
         backgroundColor: color,
       }}
