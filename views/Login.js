@@ -23,6 +23,8 @@ import {useSelector, useDispatch} from 'react-redux';
 
 import {UserContext} from '../App';
 import {setUsername, setMailState, setUid} from '../state/userSlice';
+import Loading from '../components/Loading';
+import {ToggleButtonClick} from 'native-base/lib/typescript/components/composites/Typeahead/useTypeahead/types';
 
 const Login = ({navigation}) => {
   const userData = useSelector(state => state.user);
@@ -90,7 +92,6 @@ const Login = ({navigation}) => {
         setMail('');
         setPwd('');
         navigation.navigate('Homepage');
-        setToggleLoading(false);
       })
       .catch(err => {
         switch (err.code) {
@@ -123,25 +124,17 @@ const Login = ({navigation}) => {
         setTimeout(() => {
           setPwdError('');
         }, 5000);
+      })
+      .finally(() => {
+        setToggleLoading(false);
       });
-    setToggleLoading(false);
   };
 
   return (
     <ScrollView
       contentContainerStyle={s.view}
       keyboardShouldPersistTaps="handled">
-      <Dialog
-        isVisible={toogleLoading}
-        overlayStyle={{
-          backgroundColor: 'none',
-          width: 0,
-          height: 0,
-          padding: 0,
-          margin: 0,
-        }}>
-        <Dialog.Loading />
-      </Dialog>
+      <Loading loading={toogleLoading} />
       <Text h2 style={{marginBottom: 55, marginTop: 40}}>
         Accedi!
       </Text>
