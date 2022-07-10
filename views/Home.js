@@ -295,7 +295,11 @@ const Home = ({navigation}) => {
                 <Badge
                   status="error"
                   value={challengeNum}
-                  containerStyle={{position: 'absolute', top: -5, left: 195}}
+                  containerStyle={{
+                    position: 'absolute',
+                    top: '5%',
+                    left: '70%',
+                  }}
                 />
               ) : (
                 <></>
@@ -321,7 +325,11 @@ const Home = ({navigation}) => {
                 <Badge
                   status="error"
                   value={reqsNum}
-                  containerStyle={{position: 'absolute', top: -5, left: 195}}
+                  containerStyle={{
+                    position: 'absolute',
+                    top: '5%',
+                    left: '70%',
+                  }}
                 />
               ) : (
                 <></>
@@ -464,7 +472,7 @@ const CreateMatchDialog = ({
       animationType="fade"
       isVisible={showOverlay}
       overlayStyle={{width: '90%', display: 'flex', alignItems: 'center'}}>
-      <TextE h4 style={{marginVertical: 10}}>
+      <TextE h4 style={{marginVertical: '3%'}}>
         Seleziona e crea una nuova partita
       </TextE>
       <SelectData.Provider value={v}>
@@ -489,8 +497,8 @@ const CreateMatchDialog = ({
           k="wLen"
         />
 
-        <View style={{width: '80%', marginBottom: 15}}>
-          <Text style={{color: 'black', fontSize: 17, marginBottom: 5}}>
+        <View style={{width: '80%', marginBottom: '3%'}}>
+          <Text style={{color: 'black', fontSize: 17, marginBottom: '1%'}}>
             Password (opzionale)
           </Text>
           <Input
@@ -514,11 +522,11 @@ const CreateMatchDialog = ({
           flexDirection: 'row',
           width: '100%',
           justifyContent: 'space-between',
-          marginTop: 20,
+          marginTop: '4%',
         }}>
         <Button
           title="ANNULLA"
-          buttonStyle={{margin: 5}}
+          buttonStyle={{margin: '2%'}}
           onPress={() => {
             toggleOverlay();
             console.log(vals);
@@ -526,7 +534,7 @@ const CreateMatchDialog = ({
         />
         <Button
           title="CREA PARTITA"
-          buttonStyle={{margin: 5}}
+          buttonStyle={{margin: '2%'}}
           onPress={() => {
             toggleOverlay();
             setToggleLoading(true);
@@ -544,8 +552,8 @@ const SelectDropdown = ({label, data, placeholder, k}) => {
   const {vals, setVals} = useContext(SelectData);
 
   return (
-    <View style={{width: '80%', marginBottom: 15}}>
-      <Text style={{color: 'black', fontSize: 17, marginBottom: 5}}>
+    <View style={{width: '80%', marginBottom: '4%'}}>
+      <Text style={{color: 'black', fontSize: 17, marginBottom: '1%'}}>
         {label}
       </Text>
 
