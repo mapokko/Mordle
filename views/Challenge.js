@@ -198,8 +198,6 @@ const Challenge = ({route, navigation}) => {
         }}
         onShow={() => {
           setRandomWord(randomWords(5, 1)[0]);
-        }}
-        onDismiss={() => {
           dispatchLocal({type: 'clear'});
         }}>
         <FormControl isInvalid={invalidAdd}>
